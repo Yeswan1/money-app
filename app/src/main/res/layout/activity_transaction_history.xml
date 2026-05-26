@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Header -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:text="Transaction History"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Search Bar -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/search_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="8dp"
+        app:hintEnabled="false"
+        app:layout_constraintTop_toBottomOf="@id/header"
+        app:startIconDrawable="@android:drawable/ic_menu_search"
+        app:startIconTint="@color/text_muted">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/search_edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_text_bg"
+            android:hint="Search transactions..."
+            android:inputType="text"
+            android:padding="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_muted" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Filter Chips -->
+    <HorizontalScrollView
+        android:id="@+id/filter_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="20dp"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/search_layout">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/filter_chip_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:singleSelection="true">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_all"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="All"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/chip_text_color_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_income"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Income"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/chip_text_color_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_expense"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Expense"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/chip_text_color_selector" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_this_week"
+                style="@style/Widget.Material3.Chip.Filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="This Week"
+                app:chipBackgroundColor="@drawable/chip_bg_selector"
+                app:chipStrokeWidth="0dp"
+                android:textColor="@color/chip_text_color_selector" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- Month Selector Placeholder -->
+    <View
+        android:id="@+id/month_selector"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/summary_item_bg"
+        app:layout_constraintTop_toBottomOf="@id/filter_scroll" />
+
+    <!-- History List -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/month_selector">
+
+        <LinearLayout
+            android:id="@+id/history_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp">
+
+            <!-- Today -->
+            <TextView
+                style="@style/HistoryDateHeader"
+                android:text="TODAY" />
+
+            <include android:id="@+id/item_today_1" layout="@layout/item_transaction_recent" />
+
+            <!-- Yesterday -->
+            <TextView
+                style="@style/HistoryDateHeader"
+                android:layout_marginTop="16dp"
+                android:text="YESTERDAY" />
+
+            <include android:id="@+id/item_yesterday_1" layout="@layout/item_transaction_recent" />
+            <include android:id="@+id/item_yesterday_2" layout="@layout/item_transaction_recent" />
+
+            <!-- March 15, 2026 -->
+            <TextView
+                style="@style/HistoryDateHeader"
+                android:layout_marginTop="16dp"
+                android:text="MAR 15, 2026" />
+
+            <include android:id="@+id/item_mar15_1" layout="@layout/item_transaction_recent" />
+            <include android:id="@+id/item_mar15_2" layout="@layout/item_transaction_recent" />
+
+            <!-- March 1, 2026 -->
+            <TextView
+                style="@style/HistoryDateHeader"
+                android:layout_marginTop="16dp"
+                android:text="MAR 1, 2026" />
+
+            <include android:id="@+id/item_mar1_1" layout="@layout/item_transaction_recent" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

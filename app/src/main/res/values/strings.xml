@@ -1,0 +1,202 @@
+<resources>
+    <string name="app_name">Moneymap</string>
+    <string name="pocket">Pocket</string>
+    <string name="tagline">Track Smart. Spend Smart.</string>
+    <string name="version">v1.0</string>
+
+    <!-- Login Screen -->
+    <string name="welcome_back">Welcome Back!</string>
+    <string name="sign_in_subtitle">Sign in to continue managing your expenses</string>
+    <string name="email_label">EMAIL</string>
+    <string name="email_hint">your.email@example.com</string>
+    <string name="password_label">PASSWORD</string>
+    <string name="password_hint">Enter your password</string>
+    <string name="remember_me">Remember me</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="sign_in">Sign In</string>
+    <string name="or">OR</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="continue_with_facebook">Continue with Facebook</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign Up</string>
+
+    <!-- Sign Up Screen -->
+    <string name="create_account">Create Account</string>
+    <string name="sign_up_subtitle">Start your journey to smart spending</string>
+    <string name="full_name_label">FULL NAME</string>
+    <string name="full_name_hint">John Doe</string>
+    <string name="password_hint_signup">Create a strong password</string>
+    <string name="confirm_password_label">CONFIRM PASSWORD</string>
+    <string name="confirm_password_hint">Re-enter your password</string>
+    <string name="terms_part1">I agree to the </string>
+    <string name="terms_part2">Terms &amp; Conditions</string>
+    <string name="terms_part3"> and </string>
+    <string name="terms_part4">Privacy Policy</string>
+    <string name="already_have_account">Already have an account?</string>
+
+    <!-- Onboarding Screen -->
+    <string name="onboarding_app_name">Pocket Manager</string>
+    <string name="onboarding_skip">Skip</string>
+
+    <string name="onboarding_1_title">Track Every Penny</string>
+    <string name="onboarding_1_subtitle">Automatically categorize and monitor your spending habits with ease.</string>
+
+    <string name="onboarding_2_title">Smart Budgeting</string>
+    <string name="onboarding_2_subtitle">Set monthly limits and get notified before you overspend. Master your money with precision.</string>
+
+    <string name="onboarding_next">Next</string>
+    <string name="onboarding_step_2">Step 2 of 4 • Financial Setup</string>
+
+    <string name="who_are_you">Who are you?</string>
+    <string name="onboarding_subtitle">We\'ll personalize your experience</string>
+    <string name="student">Student</string>
+    <string name="student_desc">Pocket money tracker</string>
+    <string name="employee">Employee</string>
+    <string name="employee_desc">Salary manager</string>
+    <string name="homemaker">Homemaker</string>
+    <string name="homemaker_desc">Household budget</string>
+    <string name="freelancer">Freelancer</string>
+    <string name="freelancer_desc">Variable income</string>
+    <string name="general">General</string>
+    <string name="general_desc">Basic tracking</string>
+    <string name="continue_btn">Continue</string>
+
+    <!-- Student Setup & Dashboard -->
+    <string name="set_up_profile">Set up Profile</string>
+    <string name="step_1_2">Step 1/2</string>
+    <string name="step_2_2">Step 2/2</string>
+    <string name="your_name">YOUR NAME</string>
+    <string name="enter_your_name">Enter your name</string>
+    <string name="select_currency">SELECT CURRENCY</string>
+    <string name="indian_rupee">₹ Indian Rupee</string>
+    <string name="monthly_pocket_money">MONTHLY POCKET MONEY</string>
+    <string name="pocket_money_date">POCKET MONEY DATE</string>
+    <string name="date_hint">dd-mm-yyyy</string>
+    <string name="college_name">COLLEGE NAME</string>
+    <string name="enter_college_name">Enter college name</string>
+    <string name="semester_fee_amount">SEMESTER FEE AMOUNT</string>
+    <string name="next_semester_due_date">NEXT SEMESTER DUE DATE</string>
+    <string name="next_btn">Next -></string>
+    <string name="back">Back</string>
+    <string name="select">Select</string>
+    <string name="stepper">Stepper</string>
+    <string name="calendar">Calendar</string>
+
+    <string name="student_profile">Student Profile</string>
+    <string name="student_setup_subtitle">Tailoring the pocket money tracker for you</string>
+    <string name="available_pocket_money">Available Pocket Money</string>
+    <string name="default_student_balance">$450.00</string>
+    <string name="weekly_spending">Weekly Spending</string>
+    <string name="weekly_spent_label">$40 spent</string>
+    <string name="weekly_left_label">$60 left</string>
+    <string name="my_goals">My Goals</string>
+    <string name="goal_new_shoes">New Shoes</string>
+    <string name="goal_concert">Concert</string>
+    <string name="student_expenses">Student Expenses</string>
+    <string name="campus_cafe">Campus Cafe</string>
+    <string name="food_time_label">Food • 1h ago</string>
+    <string name="cafe_amount">-$5.50</string>
+    <string name="bookstore">Bookstore</string>
+    <string name="supplies_time_label">Supplies • 4h ago</string>
+    <string name="bookstore_amount">-$12.00</string>
+
+    <!-- Employee Setup & Dashboard -->
+    <string name="employee_profile">Employee Profile</string>
+    <string name="employee_setup_subtitle">Optimizing the salary manager for your lifestyle</string>
+    <string name="monthly_salary">MONTHLY SALARY</string>
+    <string name="salary_hint">0.00</string>
+    <string name="investment_goal">Investment Goal</string>
+    <string name="available_salary">Available Salary</string>
+    <string name="default_salary_balance">$3,200.00</string>
+    <string name="monthly_limit">Monthly Limit</string>
+    <string name="salary_spent_label">$1,200 spent</string>
+    <string name="salary_left_label">$2,000 left</string>
+    <string name="investments">Investments</string>
+    <string name="goal_stock_market">Stock Market</string>
+    <string name="goal_real_estate">Real Estate</string>
+    <string name="office_expenses">Office &amp; Daily Expenses</string>
+    <string name="commute">Commute</string>
+    <string name="transport_label">Transport • 3h ago</string>
+    <string name="commute_amount">-$8.00</string>
+    <string name="lunch">Lunch</string>
+    <string name="food_label">Food • 5h ago</string>
+    <string name="lunch_amount">-$15.00</string>
+
+    <string name="salary_credit_date">SALARY CREDIT DATE</string>
+    <string name="company_name">COMPANY NAME</string>
+    <string name="enter_company_name">Enter company name</string>
+    <string name="do_you_have_emis">DO YOU HAVE EMIs?</string>
+    <string name="emi_status">EMI Status</string>
+    <string name="fixed_monthly_expenses">FIXED MONTHLY EXPENSES</string>
+
+    <!-- Homemaker Dashboard -->
+    <string name="household_budget">Household Budget</string>
+    <string name="remaining_budget">Remaining Budget</string>
+    <string name="grocery_budget">Grocery Budget</string>
+    <string name="utilities_bills">Utilities &amp; Bills</string>
+    <string name="daily_household_expenses">Daily Household Expenses</string>
+    <string name="household_savings">Household Savings</string>
+    <string name="family_goal">Family Goal</string>
+
+    <!-- General User Setup -->
+    <string name="general_profile">General Profile</string>
+    <string name="general_setup_subtitle">Setting up your basic expense tracker</string>
+    <string name="monthly_income">MONTHLY INCOME</string>
+    <string name="income_hint">0.00</string>
+    <string name="income_date">INCOME CREDIT DATE</string>
+    <string name="spending_limit">MONTHLY SPENDING LIMIT</string>
+    <string name="limit_hint">Set a limit</string>
+    <string name="primary_spending_category">PRIMARY SPENDING CATEGORY</string>
+    <string name="food_dining">Food &amp; Dining</string>
+    <string name="shopping">Shopping</string>
+    <string name="transportation">Transportation</string>
+    <string name="bills_utilities">Bills &amp; Utilities</string>
+
+    <!-- Budget Setup Screen -->
+    <string name="budget_setup">Budget Setup</string>
+    <string name="budget_setup_subtitle">Define your limits for each category</string>
+    <string name="total_monthly_limit">TOTAL MONTHLY LIMIT</string>
+    <string name="category_budgets">CATEGORY BUDGETS</string>
+    <string name="food_budget">Food &amp; Dining Budget</string>
+    <string name="shopping_budget">Shopping Budget</string>
+    <string name="transport_budget">Transport Budget</string>
+    <string name="entertainment_budget">Entertainment Budget</string>
+
+    <!-- Notification Permission -->
+    <string name="stay_notified">Stay Notified</string>
+    <string name="notification_desc">Receive alerts when you\'re close to your budget limit or when bills are due. Never miss a payment again.</string>
+    <string name="allow">Allow</string>
+    <string name="not_now">Not Now</string>
+
+    <!-- Add Transaction Screen -->
+    <string name="add_transaction">Add Transaction</string>
+    <string name="expense">EXPENSE</string>
+    <string name="income">INCOME</string>
+    <string name="select_category">SELECT CATEGORY</string>
+    <string name="save_transaction">Save Transaction</string>
+    <string name="add_a_note">Add a note...</string>
+    <string name="today_date">Today, Mar 19</string>
+
+    <!-- Categories -->
+    <string name="cat_rent_emi">Rent/EMI</string>
+    <string name="cat_food">Food</string>
+    <string name="cat_transport">Transport</string>
+    <string name="cat_entertainment">Entertainment</string>
+    <string name="cat_health">Health</string>
+    <string name="cat_bills">Bills</string>
+    <string name="cat_shopping">Shopping</string>
+    <string name="cat_investment">Investment</string>
+    <string name="cat_gifts">Gifts</string>
+    <string name="cat_travel">Travel</string>
+    <string name="cat_education">Education</string>
+    <string name="cat_other">Other</string>
+
+    <!-- Success Screen -->
+    <string name="transaction_saved">Transaction Saved!</string>
+    <string name="success_desc">Your expense has been successfully recorded and your budget has been updated.</string>
+    <string name="back_to_home">Back to Home</string>
+
+    <!-- Missing Strings -->
+    <string name="optional_hint">Optional</string>
+    <string name="complete_setup">Complete Setup</string>
+</resources>

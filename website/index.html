@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoneyMap Web App</title>
+    <meta name="description" content="MoneyMap web dashboard for tracking income, expenses, budgets, and savings goals.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="authView" class="auth-view">
+        <section class="auth-panel">
+            <div class="brand-row">
+                <span class="brand-mark">M</span>
+                <div>
+                    <h1>MoneyMap</h1>
+                    <p>Personal finance workspace</p>
+                </div>
+            </div>
+
+            <div class="auth-tabs" role="tablist">
+                <button class="tab-button active" id="loginTab" type="button">Login</button>
+                <button class="tab-button" id="signupTab" type="button">Sign up</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <label>
+                    Email
+                    <input id="loginEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>
+                    Password
+                    <input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required>
+                </label>
+                <button class="primary-button" type="submit">Login</button>
+            </form>
+
+            <form id="signupForm" class="auth-form hidden">
+                <label>
+                    Full name
+                    <input id="signupName" type="text" autocomplete="name" required>
+                </label>
+                <label>
+                    Email
+                    <input id="signupEmail" type="email" autocomplete="email" required>
+                </label>
+                <label>
+                    Password
+                    <input id="signupPassword" type="password" autocomplete="new-password" minlength="6" required>
+                </label>
+                <button class="primary-button" type="submit">Create account</button>
+            </form>
+
+            <p id="authMessage" class="form-message"></p>
+        </section>
+
+        <aside class="auth-preview" aria-label="MoneyMap preview">
+            <div class="preview-balance">
+                <span>Monthly balance</span>
+                <strong id="previewBalance">$4,240.00</strong>
+            </div>
+            <div class="preview-chart">
+                <span style="height: 42%"></span>
+                <span style="height: 65%"></span>
+                <span style="height: 35%"></span>
+                <span style="height: 74%"></span>
+                <span style="height: 58%"></span>
+                <span style="height: 82%"></span>
+            </div>
+            <div class="preview-row">
+                <span>Food budget</span>
+                <strong>68%</strong>
+            </div>
+            <div class="preview-row">
+                <span>Savings goal</span>
+                <strong>42%</strong>
+            </div>
+        </aside>
+    </div>
+
+    <div id="appView" class="app-shell hidden">
+        <aside class="sidebar">
+            <div class="brand-row compact">
+                <span class="brand-mark">M</span>
+                <strong>MoneyMap</strong>
+            </div>
+            <nav class="side-nav" aria-label="Primary navigation">
+                <button class="nav-item active" data-view="dashboard" type="button"><span>H</span> Home</button>
+                <button class="nav-item" data-view="transactions" type="button"><span>T</span> Transactions</button>
+                <button class="nav-item" data-view="budgets" type="button"><span>B</span> Budgets</button>
+                <button class="nav-item" data-view="goals" type="button"><span>G</span> Goals</button>
+                <button class="nav-item" data-view="subscriptions" type="button"><span>S</span> Subscriptions</button>
+                <button class="nav-item" data-view="reports" type="button"><span>R</span> Reports</button>
+                <button class="nav-item" data-view="assistant" type="button"><span>A</span> Assistant</button>
+                <button class="nav-item" data-view="profile" type="button"><span>P</span> Profile</button>
+            </nav>
+            <button id="logoutButton" class="ghost-button" type="button">Logout</button>
+        </aside>
+
+        <main class="workspace">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Workspace</p>
+                    <h2 id="pageTitle">Dashboard</h2>
+                </div>
+                <div class="user-chip">
+                    <span id="userInitials">MM</span>
+                    <div>
+                        <strong id="userName">MoneyMap user</strong>
+                        <small id="userEmail">user@example.com</small>
+                    </div>
+                </div>
+            </header>
+
+            <section id="dashboardView" class="view-section">
+                <div class="metric-grid">
+                    <article class="metric-card">
+                        <span>Income</span>
+                        <strong id="incomeMetric">$0.00</strong>
+                        <small>This month</small>
+                    </article>
+                    <article class="metric-card">
+                        <span>Spent</span>
+                        <strong id="spentMetric">$0.00</strong>
+                        <small>This month</small>
+                    </article>
+                    <article class="metric-card">
+                        <span>Net savings</span>
+                        <strong id="savingsMetric">$0.00</strong>
+                        <small>Income minus expenses</small>
+                    </article>
+                    <article class="metric-card">
+                        <span>Goal progress</span>
+                        <strong id="goalMetric">0%</strong>
+                        <small>All goals combined</small>
+                    </article>
+                </div>
+
+                <div class="content-grid">
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Recent transactions</h3>
+                            <button class="text-button" data-view-link="transactions" type="button">View all</button>
+                        </div>
+                        <div id="recentTransactions" class="transaction-list"></div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Budget health</h3>
+                        </div>
+                        <div id="budgetList" class="budget-list"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="transactionsView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Add transaction</h3>
+                        </div>
+                        <form id="transactionForm" class="stack-form">
+                            <label>
+                                Type
+                                <select id="transactionType">
+                                    <option value="EXPENSE">Expense</option>
+                                    <option value="INCOME">Income</option>
+                                </select>
+                            </label>
+                            <label>
+                                Category
+                                <select id="transactionCategory"></select>
+                            </label>
+                            <label>
+                                Amount
+                                <input id="transactionAmount" type="number" min="0.01" step="0.01" required>
+                            </label>
+                            <label>
+                                Description
+                                <input id="transactionDescription" type="text" placeholder="Groceries, salary, rent">
+                            </label>
+                            <label>
+                                Date
+                                <input id="transactionDate" type="date" required>
+                            </label>
+                            <button class="primary-button" type="submit">Save transaction</button>
+                            <p id="transactionMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Transaction history</h3>
+                            <button id="refreshButton" class="text-button" type="button">Refresh</button>
+                        </div>
+                        <div id="transactionList" class="transaction-list"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="budgetsView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Set monthly budget</h3>
+                        </div>
+                        <form id="budgetForm" class="stack-form">
+                            <label>
+                                Category
+                                <select id="budgetCategory"></select>
+                            </label>
+                            <label>
+                                Amount
+                                <input id="budgetAmount" type="number" min="0" step="0.01" required>
+                            </label>
+                            <div class="form-row">
+                                <label>
+                                    Month
+                                    <input id="budgetMonth" type="number" min="1" max="12" required>
+                                </label>
+                                <label>
+                                    Year
+                                    <input id="budgetYear" type="number" min="2000" max="2100" required>
+                                </label>
+                            </div>
+                            <button class="primary-button" type="submit">Save budget</button>
+                            <p id="budgetMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Budget summary</h3>
+                        </div>
+                        <div id="budgetSummaryList" class="budget-list"></div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Create category</h3>
+                        </div>
+                        <form id="categoryForm" class="stack-form">
+                            <label>
+                                Name
+                                <input id="categoryName" type="text" placeholder="Food" required>
+                            </label>
+                            <label>
+                                Color
+                                <input id="categoryColor" type="color" value="#2563eb">
+                            </label>
+                            <button class="primary-button" type="submit">Add category</button>
+                            <p id="categoryMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Categories</h3>
+                        </div>
+                        <div id="categoryList" class="category-grid"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="goalsView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Create savings goal</h3>
+                        </div>
+                        <form id="goalForm" class="stack-form">
+                            <label>
+                                Name
+                                <input id="goalName" type="text" placeholder="Emergency fund" required>
+                            </label>
+                            <label>
+                                Target amount
+                                <input id="goalTarget" type="number" min="0.01" step="0.01" required>
+                            </label>
+                            <label>
+                                Current amount
+                                <input id="goalCurrent" type="number" min="0" step="0.01" value="0">
+                            </label>
+                            <label>
+                                Target date
+                                <input id="goalDate" type="date">
+                            </label>
+                            <label>
+                                Color
+                                <input id="goalColor" type="color" value="#059669">
+                            </label>
+                            <button class="primary-button" type="submit">Save goal</button>
+                            <p id="goalMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Savings goals</h3>
+                        </div>
+                        <div id="goalList" class="budget-list"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="subscriptionsView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Add subscription</h3>
+                        </div>
+                        <form id="subscriptionForm" class="stack-form">
+                            <label>
+                                Name
+                                <input id="subscriptionName" type="text" placeholder="Netflix" required>
+                            </label>
+                            <label>
+                                Amount
+                                <input id="subscriptionAmount" type="number" min="0.01" step="0.01" required>
+                            </label>
+                            <label>
+                                Billing cycle
+                                <select id="subscriptionCycle">
+                                    <option value="WEEKLY">Weekly</option>
+                                    <option value="MONTHLY" selected>Monthly</option>
+                                    <option value="QUARTERLY">Quarterly</option>
+                                    <option value="YEARLY">Yearly</option>
+                                </select>
+                            </label>
+                            <label>
+                                Next billing date
+                                <input id="subscriptionDate" type="date" required>
+                            </label>
+                            <label>
+                                Color
+                                <input id="subscriptionColor" type="color" value="#db2777">
+                            </label>
+                            <button class="primary-button" type="submit">Save subscription</button>
+                            <p id="subscriptionMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Subscriptions</h3>
+                        </div>
+                        <div id="subscriptionList" class="budget-list"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="reportsView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel wide">
+                        <div class="section-title">
+                            <h3>Six month trend</h3>
+                        </div>
+                        <div id="trendChart" class="trend-chart"></div>
+                    </section>
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Monthly breakdown</h3>
+                        </div>
+                        <div id="breakdownList" class="budget-list"></div>
+                    </section>
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Weekly report</h3>
+                        </div>
+                        <div id="weeklyReportList" class="budget-list"></div>
+                    </section>
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Monthly report</h3>
+                        </div>
+                        <div id="monthlyReportList" class="budget-list"></div>
+                    </section>
+                </div>
+            </section>
+
+            <section id="assistantView" class="view-section hidden">
+                <div class="assistant-layout">
+                    <section class="panel assistant-panel">
+                        <div class="section-title">
+                            <h3>MoneyMap Assistant</h3>
+                            <button id="newChatButton" class="text-button" type="button">New chat</button>
+                        </div>
+                        <div id="chatMessages" class="chat-messages"></div>
+                        <form id="chatForm" class="chat-form">
+                            <input id="chatInput" type="text" placeholder="Ask about spending, budgets, savings, or goals" autocomplete="off" required>
+                            <button class="primary-button" type="submit">Send</button>
+                        </form>
+                        <p id="chatMessage" class="form-message"></p>
+                    </section>
+
+                    <aside class="panel assistant-tips">
+                        <h3>Try asking</h3>
+                        <button class="prompt-chip" type="button">How much did I spend this month?</button>
+                        <button class="prompt-chip" type="button">Where can I save more?</button>
+                        <button class="prompt-chip" type="button">Review my budgets</button>
+                        <button class="prompt-chip" type="button">Give me a simple savings plan</button>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="profileView" class="view-section hidden">
+                <div class="content-grid">
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Account settings</h3>
+                        </div>
+                        <form id="settingsForm" class="stack-form">
+                            <label>
+                                Name
+                                <input id="settingsName" type="text" required>
+                            </label>
+                            <label>
+                                Currency
+                                <select id="settingsCurrency">
+                                    <option value="USD">USD</option>
+                                    <option value="INR">INR</option>
+                                    <option value="EUR">EUR</option>
+                                    <option value="GBP">GBP</option>
+                                </select>
+                            </label>
+                            <label class="check-row">
+                                <input id="settingsNotifications" type="checkbox">
+                                Notifications enabled
+                            </label>
+                            <button class="primary-button" type="submit">Save settings</button>
+                            <p id="settingsMessage" class="form-message"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel">
+                        <div class="section-title">
+                            <h3>Financial profile</h3>
+                        </div>
+                        <form id="profileForm" class="stack-form">
+                            <label>
+                                Institution
+                                <input id="profileInstitution" type="text">
+                            </label>
+                            <label>
+                                Company
+                                <input id="profileCompany" type="text">
+                            </label>
+                            <label>
+                                Job title
+                                <input id="profileJobTitle" type="text">
+                            </label>
+                            <label>
+                                Monthly income
+                                <input id="profileMonthlyIncome" type="number" min="0" step="0.01">
+                            </label>
+                            <label>
+                                Financial goal
+                                <input id="profileFinancialGoal" type="text" placeholder="Build emergency fund">
+                            </label>
+                            <button class="primary-button" type="submit">Save profile</button>
+                            <p id="profileMessage" class="form-message"></p>
+                        </form>
+                    </section>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

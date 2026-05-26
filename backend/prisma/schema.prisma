@@ -1,0 +1,280 @@
+// MoneyMap — Prisma Schema
+// PostgreSQL database with full relational model
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  PROFESSIONAL
+  HOMEMAKER
+  PERSONAL
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum BillingCycle {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// ─── User ────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique @db.VarChar(255)
+  passwordHash  String    @db.VarChar(255)
+  name          String    @db.VarChar(255)
+  role          Role      @default(PERSONAL)
+  currency      String    @default("USD") @db.VarChar(10)
+  emailVerified Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  profile              UserProfile?
+  transactions         Transaction[]
+  budgets              Budget[]
+  savingsGoals         SavingsGoal[]
+  subscriptions        Subscription[]
+  chatSessions         ChatSession[]
+  refreshTokens        RefreshToken[]
+  notificationPref     NotificationPreference?
+  categories           Category[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// ─── User Profile (role-specific data) ───────────────────
+
+model UserProfile {
+  id                    String   @id @default(uuid()) @db.Uuid
+  userId                String   @unique @db.Uuid
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Student fields
+  institution           String?  @db.VarChar(255)
+  yearOfStudy           String?  @db.VarChar(50)
+  monthlyAllowance      Decimal? @db.Decimal(12, 2)
+
+  // Professional fields
+  companyName           String?  @db.VarChar(255)
+  jobTitle              String?  @db.VarChar(255)
+  monthlyIncome         Decimal? @db.Decimal(12, 2)
+
+  // Homemaker fields
+  householdSize         Int?
+  monthlyBudget         Decimal? @db.Decimal(12, 2)
+  primaryCategories     Json?    @default("[]")
+
+  // General fields
+  financialGoal         String?  @db.VarChar(100)
+  onboardingCompleted   Boolean  @default(false)
+  notificationsEnabled  Boolean  @default(false)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+// ─── Category ────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  color       String   @db.VarChar(20)
+  icon        String   @default("default") @db.VarChar(50)
+  isSystem    Boolean  @default(false)
+  userId      String?  @db.Uuid
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+  budgets      Budget[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([name, userId])
+  @@index([userId])
+  @@index([isSystem])
+  @@map("categories")
+}
+
+// ─── Transaction ─────────────────────────────────────────
+
+model Transaction {
+  id              String          @id @default(uuid()) @db.Uuid
+  userId          String          @db.Uuid
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId      String          @db.Uuid
+  category        Category        @relation(fields: [categoryId], references: [id])
+  amount          Decimal         @db.Decimal(12, 2)
+  type            TransactionType
+  description     String?         @db.VarChar(500)
+  transactionDate DateTime        @db.Date
+  tags            TransactionTag[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  deletedAt       DateTime?
+
+  @@index([userId, transactionDate])
+  @@index([userId, categoryId])
+  @@index([userId, type])
+  @@index([deletedAt])
+  @@map("transactions")
+}
+
+// ─── Transaction Tags ────────────────────────────────────
+
+model TransactionTag {
+  id            String      @id @default(uuid()) @db.Uuid
+  transactionId String      @db.Uuid
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  tag           String      @db.VarChar(50)
+
+  @@unique([transactionId, tag])
+  @@index([tag])
+  @@map("transaction_tags")
+}
+
+// ─── Budget ──────────────────────────────────────────────
+
+model Budget {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id])
+  amount     Decimal  @db.Decimal(12, 2)
+  month      Int      @db.SmallInt
+  year       Int      @db.SmallInt
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, categoryId, month, year])
+  @@index([userId, month, year])
+  @@map("budgets")
+}
+
+// ─── Savings Goal ────────────────────────────────────────
+
+model SavingsGoal {
+  id            String    @id @default(uuid()) @db.Uuid
+  userId        String    @db.Uuid
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String    @db.VarChar(255)
+  targetAmount  Decimal   @db.Decimal(12, 2)
+  currentAmount Decimal   @default(0) @db.Decimal(12, 2)
+  targetDate    DateTime? @db.Date
+  icon          String    @default("flag") @db.VarChar(50)
+  color         String    @default("#3B82F6") @db.VarChar(20)
+  isCompleted   Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("savings_goals")
+}
+
+// ─── Subscription ────────────────────────────────────────
+
+model Subscription {
+  id              String       @id @default(uuid()) @db.Uuid
+  userId          String       @db.Uuid
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String       @db.VarChar(255)
+  amount          Decimal      @db.Decimal(12, 2)
+  billingCycle    BillingCycle @default(MONTHLY)
+  nextBillingDate DateTime     @db.Date
+  color           String       @default("#3B82F6") @db.VarChar(20)
+  isActive        Boolean      @default(true)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([userId])
+  @@index([userId, nextBillingDate])
+  @@map("subscriptions")
+}
+
+// ─── Chat ────────────────────────────────────────────────
+
+model ChatSession {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @db.Uuid
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+
+  @@index([userId])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid()) @db.Uuid
+  sessionId String      @db.Uuid
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  content   String      @db.Text
+  isUser    Boolean
+  createdAt DateTime    @default(now())
+
+  @@index([sessionId, createdAt])
+  @@map("chat_messages")
+}
+
+// ─── Refresh Token ───────────────────────────────────────
+
+model RefreshToken {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique @db.VarChar(255)
+  deviceInfo String?   @db.VarChar(500)
+  ipAddress  String?   @db.VarChar(45)
+  isRevoked  Boolean   @default(false)
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ─── Notification Preference ─────────────────────────────
+
+model NotificationPreference {
+  id                    String  @id @default(uuid()) @db.Uuid
+  userId                String  @unique @db.Uuid
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgetAlerts          Boolean @default(true)
+  goalReminders         Boolean @default(true)
+  subscriptionReminders Boolean @default(true)
+  weeklyReport          Boolean @default(true)
+  monthlyReport         Boolean @default(true)
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("notification_preferences")
+}

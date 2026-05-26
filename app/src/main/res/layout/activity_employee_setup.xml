@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Header -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="serif"
+            android:text="@string/set_up_profile"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/step_1_2"
+            android:textColor="@color/text_muted"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Progress Bar -->
+    <ProgressBar
+        android:id="@+id/setup_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="6dp"
+        android:layout_marginHorizontal="20dp"
+        android:progress="45"
+        android:progressDrawable="@drawable/custom_progress_bar"
+        app:layout_constraintTop_toBottomOf="@id/header" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/btn_next"
+        app:layout_constraintTop_toBottomOf="@id/setup_progress">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Name -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:text="@string/your_name" />
+
+            <EditText
+                style="@style/SetupInputStyle"
+                android:hint="@string/enter_your_name"
+                android:inputType="textPersonName" />
+
+            <!-- Currency -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/select_currency" />
+
+            <LinearLayout
+                style="@style/SetupInputStyle"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/indian_rupee"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/arrow_down_float"
+                    app:tint="@color/white" />
+            </LinearLayout>
+
+            <!-- Monthly Salary -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/monthly_salary" />
+
+            <EditText
+                style="@style/SetupInputStyle"
+                android:hint="45000"
+                android:inputType="number" />
+
+            <!-- Salary Credit Date -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/salary_credit_date" />
+
+            <LinearLayout
+                android:id="@+id/date_salary_container"
+                style="@style/SetupInputStyle"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tv_salary_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/date_hint"
+                    android:textColor="@color/text_muted" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_my_calendar"
+                    app:tint="@color/text_muted" />
+            </LinearLayout>
+
+            <!-- Company Name -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/company_name" />
+
+            <EditText
+                style="@style/SetupInputStyle"
+                android:hint="@string/enter_company_name"
+                android:inputType="text" />
+
+            <!-- EMI Question -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/do_you_have_emis" />
+
+            <LinearLayout
+                style="@style/SetupInputStyle"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/emi_status"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/emi_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:thumbTint="@color/white"
+                    app:trackTint="@color/border_color" />
+            </LinearLayout>
+
+            <!-- Fixed Monthly Expenses -->
+            <TextView
+                style="@style/SetupLabelStyle"
+                android:layout_marginTop="24dp"
+                android:text="@string/fixed_monthly_expenses" />
+
+            <EditText
+                style="@style/SetupInputStyle"
+                android:layout_marginBottom="32dp"
+                android:hint="16500"
+                android:inputType="number" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_next"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_margin="20dp"
+        android:backgroundTint="@color/accent_lime"
+        android:text="@string/next_btn"
+        android:textAllCaps="false"
+        android:textColor="@color/bg_dark"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:cornerRadius="32dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Design System Colors -->
+    <color name="bg_dark">#0B0D12</color>
+    <color name="surface_card">#161A24</color>
+    <color name="surface_card_lighter">#1E2330</color>
+    <color name="border_color">#242936</color>
+    <color name="accent_lime">#C8F25A</color>
+    <color name="income_green">#4ADE80</color>
+    <color name="expense_red">#FB7185</color>
+    <color name="warning_yellow">#FBBF24</color>
+    <color name="info_teal">#2DD4BF</color>
+    <color name="purple_accent">#A78BFA</color>
+
+    <color name="text_primary">#E8ECF4</color>
+    <color name="text_muted">#94A3B8</color>
+
+    <!-- Compatibility/Previous colors mapped to new system -->
+    <color name="accent_green">@color/accent_lime</color>
+    <color name="text_secondary">@color/text_muted</color>
+    <color name="input_bg">#161B22</color>
+    <color name="button_bg_secondary">#21262D</color>
+    <color name="checkbox_tint_checked">@color/accent_lime</color>
+</resources>

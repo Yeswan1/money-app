@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_dark">
+
+    <!-- Top Bar -->
+    <TextView
+        android:id="@+id/tv_app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="@string/onboarding_app_name"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/btn_skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
+        android:text="@string/onboarding_skip"
+        android:textColor="@color/text_muted"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Visual Elements Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/visual_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/title"
+        app:layout_constraintTop_toBottomOf="@id/tv_app_name">
+
+        <!-- Card 1: Grocery Store -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_grocery"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/summary_item_bg"
+            android:padding="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.3"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:id="@+id/icon_grocery_bg"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/transaction_icon_bg"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_directions"
+                app:layout_constraintBottom_toBottomOf="@id/icon_grocery_bg"
+                app:layout_constraintEnd_toEndOf="@id/icon_grocery_bg"
+                app:layout_constraintStart_toStartOf="@id/icon_grocery_bg"
+                app:layout_constraintTop_toTopOf="@id/icon_grocery_bg"
+                app:tint="@color/white" />
+
+            <TextView
+                android:id="@+id/tv_grocery_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Grocery\nStore"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/icon_grocery_bg"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Today, 2:45\nPM"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@id/icon_grocery_bg"
+                app:layout_constraintTop_toBottomOf="@id/tv_grocery_title" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-$45.20"
+                android:textColor="#FCA5A5"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Card 2: Fine Dining -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/card_dining"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-30dp"
+            android:background="@drawable/summary_item_bg"
+            android:padding="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/card_grocery">
+
+            <View
+                android:id="@+id/icon_dining_bg"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/transaction_icon_bg"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_gallery"
+                app:layout_constraintBottom_toBottomOf="@id/icon_dining_bg"
+                app:layout_constraintEnd_toEndOf="@id/icon_dining_bg"
+                app:layout_constraintStart_toStartOf="@id/icon_dining_bg"
+                app:layout_constraintTop_toTopOf="@id/icon_dining_bg"
+                app:tint="@color/accent_lime" />
+
+            <TextView
+                android:id="@+id/tv_dining_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:text="Fine Dining"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/icon_dining_bg"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/category_chip_bg"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="Food &amp; Drinks"
+                android:textColor="@color/accent_lime"
+                android:textSize="10sp"
+                app:layout_constraintStart_toEndOf="@id/icon_dining_bg"
+                app:layout_constraintTop_toBottomOf="@id/tv_dining_title" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-$120.00"
+                android:textColor="#FCA5A5"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Feature Image -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/feature_image"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginTop="24dp"
+            android:scaleType="centerCrop"
+            android:src="@android:drawable/dialog_holo_dark_frame"
+            app:layout_constraintTop_toBottomOf="@id/card_dining"
+            app:shapeAppearanceOverlay="@style/RoundedCornersImage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Text Content -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:text="@string/onboarding_1_title"
+        android:textColor="@color/white"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/subtitle" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:text="@string/onboarding_1_subtitle"
+        android:textColor="@color/text_muted"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/pagination_dots" />
+
+    <!-- Pagination Dots -->
+    <LinearLayout
+        android:id="@+id/pagination_dots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/continue_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:layout_width="16dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/category_chip_bg"
+            android:backgroundTint="@color/accent_lime" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/badge_dot"
+            android:backgroundTint="#242936" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/badge_dot"
+            android:backgroundTint="#242936" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginHorizontal="4dp"
+            android:background="@drawable/badge_dot"
+            android:backgroundTint="#242936" />
+    </LinearLayout>
+
+    <!-- Next Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/continue_button"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="@color/accent_lime"
+        android:text="@string/onboarding_next"
+        android:textAllCaps="false"
+        android:textColor="@color/bg_dark"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:cornerRadius="16dp"
+        app:icon="@android:drawable/ic_menu_send"
+        app:iconGravity="textEnd"
+        app:iconTint="@color/bg_dark"
+        app:layout_constraintBottom_toTopOf="@id/tv_step" />
+
+    <TextView
+        android:id="@+id/tv_step"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Step 1 of 4 • Welcome"
+        android:textColor="@color/text_muted"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

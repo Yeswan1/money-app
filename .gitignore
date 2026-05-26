@@ -1,0 +1,34 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Backend
+backend/.env
+backend/node_modules/
+backend/dist/
+backend/coverage/
+
+# Generated backend JavaScript should not live beside TypeScript source
+backend/src/**/*.js
+backend/src/**/*.js.map
+
+# Logs and temp files
+*.log
+*.out.log
+*.err.log
+hs_err_pid*.log
+replay_pid*.log
+compile_error.txt
+compile_info.txt
