@@ -21,7 +21,10 @@ public class ScreenshotUtil {
         String fileName = testCaseId + "_" + timestamp + ".png";
         
         // Define directory paths
-        String relativeDir = "automation/reports/screenshots/";
+        String relativeDir = "reports/screenshots/";
+        if (new File("automation").exists()) {
+            relativeDir = "automation/reports/screenshots/";
+        }
         File dir = new File(relativeDir);
         if (!dir.exists()) {
             dir.mkdirs();

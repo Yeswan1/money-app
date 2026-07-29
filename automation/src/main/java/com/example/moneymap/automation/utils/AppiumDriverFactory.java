@@ -19,6 +19,9 @@ public class AppiumDriverFactory {
             try {
                 // Load configuration
                 String configPath = "automation/config/appium-config.json";
+                if (!new java.io.File(configPath).exists()) {
+                    configPath = "config/appium-config.json";
+                }
                 JSONObject config = new JSONObject(new JSONTokener(new FileReader(configPath)));
 
                 UiAutomator2Options options = new UiAutomator2Options();
@@ -26,8 +29,18 @@ public class AppiumDriverFactory {
                 options.setAutomationName(config.optString("automationName", "UiAutomator2"));
                 options.setDeviceName(config.optString("deviceName", "Android Emulator"));
                 
-                // Set absolute path to APK
+                // Set path to APK dynamically (fallback to relative if absolute path doesn't exist)
                 String appPath = config.optString("app");
+                java.io.File appFile = new java.io.File(appPath);
+                if (!appFile.exists()) {
+                    java.io.File relativePath1 = new java.io.File("../app/build/outputs/apk/debug/app-debug.apk");
+                    java.io.File relativePath2 = new java.io.File("app/build/outputs/apk/debug/app-debug.apk");
+                    if (relativePath1.exists()) {
+                        appPath = relativePath1.getAbsolutePath();
+                    } else if (relativePath2.exists()) {
+                        appPath = relativePath2.getAbsolutePath();
+                    }
+                }
                 options.setApp(appPath);
                 
                 options.setAppPackage(config.optString("appPackage", "com.example.moneymap"));

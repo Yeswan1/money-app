@@ -12,7 +12,12 @@ import java.util.List;
 
 public class LogUtil {
 
-    private static final String LOG_DIR = "automation/reports/logs/";
+    private static String logDir = "reports/logs/";
+    static {
+        if (new File("automation").exists()) {
+            logDir = "automation/reports/logs/";
+        }
+    }
 
     public static void log(String message) {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date());
@@ -27,7 +32,7 @@ public class LogUtil {
         System.err.println(formatted);
         writeToLogFile("execution.log", formatted);
         if (t != null) {
-            try (PrintWriter pw = new PrintWriter(new FileWriter(new File(LOG_DIR, "execution.log"), true))) {
+            try (PrintWriter pw = new PrintWriter(new FileWriter(new File(logDir, "execution.log"), true))) {
                 t.printStackTrace(pw);
             } catch (Exception e) {
                 // Ignore
@@ -42,7 +47,7 @@ public class LogUtil {
         
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String fileName = testCaseId + "_device_" + timestamp + ".log";
-        File dir = new File(LOG_DIR);
+        File dir = new File(logDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }
@@ -63,7 +68,7 @@ public class LogUtil {
     }
 
     private static synchronized void writeToLogFile(String fileName, String message) {
-        File dir = new File(LOG_DIR);
+        File dir = new File(logDir);
         if (!dir.exists()) {
             dir.mkdirs();
         }

@@ -56,9 +56,13 @@ public class BaseTest {
         long duration = suiteEndTime - suiteStartTime;
         LogUtil.log("Execution finished. Generating reports. Total duration: " + (duration / 1000) + " seconds.");
 
-        // Define output folders
-        String outputDir = "automation/reports";
+        // Define output folders dynamically
+        String outputDir = "reports";
         String resultsDir = "Test Results";
+        if (new File("automation").exists()) {
+            outputDir = "automation/reports";
+            resultsDir = "automation/Test Results";
+        }
         
         // Ensure directories exist
         new File(outputDir).mkdirs();
@@ -96,6 +100,9 @@ public class BaseTest {
 
     private void loadTestCasesCatalog() {
         String catalogPath = "automation/data/test_cases.json";
+        if (!new File(catalogPath).exists()) {
+            catalogPath = "data/test_cases.json";
+        }
         try (FileReader reader = new FileReader(catalogPath)) {
             JSONArray arr = new JSONArray(new JSONTokener(reader));
             for (int i = 0; i < arr.length(); i++) {
