@@ -75,7 +75,12 @@ jobs:
               sleep 2
             done
             
-            # 2. Run Appium tests
+            # 2. Verify ADB detects the booted emulator successfully
+            echo "Verifying booted emulator in ADB..."
+            adb devices
+            adb wait-for-device
+            
+            # 3. Run Appium tests
             cd automation
             mvn clean test
 
