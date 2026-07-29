@@ -339,7 +339,7 @@ private fun SubscriptionDto.toUiSubscription(): Subscription {
     return Subscription(
         name = name,
         billingCycle = "${billingCycle.lowercase(Locale.US).replaceFirstChar { it.uppercase() }} - Next billing ${nextBillingDate.take(10)}",
-        amount = "$${String.format(Locale.US, "%.2f", amount)}",
+        amount = "₹${String.format(Locale.US, "%.2f", amount)}",
         color = parsedColor,
     )
 }

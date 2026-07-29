@@ -11,24 +11,40 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.repository.MoneyMapRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BudgetAlertsScreen(onBack: () -> Unit) {
-    val alerts = listOf(
-        BudgetAlert("Food & Dining Exceeded", "You have exceeded your $600 Food budget by $45.", true, "2 hours ago"),
-        BudgetAlert("Transportation Near Limit", "You've used 90% of your Transport budget.", false, "Yesterday"),
-        BudgetAlert("Shopping Near Limit", "You've used 85% of your Shopping budget.", false, "May 10"),
-        BudgetAlert("Unusual Spending", "Your utility bill was 30% higher than last month.", true, "May 5")
-    )
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    var alerts by remember { mutableStateOf<List<BudgetAlert>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        repository.getDashboardStats().onSuccess { stats ->
+            alerts = stats.alerts.map {
+                BudgetAlert(
+                    title = it.title,
+                    message = it.message,
+                    isCritical = it.isCritical,
+                    time = it.time
+                )
+            }
+            isLoading = false
+        }.onFailure {
+            isLoading = false
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -62,13 +78,29 @@ fun BudgetAlertsScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
             
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(alerts) { alert ->
-                    AlertItem(alert)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF3B82F6))
+                }
+            } else if (alerts.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No alerts at the moment.", color = Color(0xFF64748B), fontSize = 16.sp)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(alerts) { alert ->
+                        AlertItem(alert)
+                    }
                 }
             }
         }

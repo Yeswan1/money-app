@@ -52,6 +52,9 @@ async function runTests() {
   console.log('✅ Role specific profile created:', user.profile);
 
   // Verify argon2 works
+  if (!user.passwordHash) {
+    throw new Error('passwordHash should not be null for password-registered user');
+  }
   const passwordMatch = await argon2.verify(user.passwordHash, 'securepassword123');
   if (!passwordMatch) {
     throw new Error('Argon2 password verification failed');

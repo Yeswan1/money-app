@@ -14,9 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.repository.MoneyMapRepository
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +29,44 @@ fun SearchScreen(
     onTransactionClick: (HistoryTransaction) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    var searchResults by remember { mutableStateOf<List<HistoryTransaction>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Dummy search results matching the mockup
-    val searchResults = listOf(
-        HistoryTransaction("1", "Restaurant Dinner", "Food", "58.30", "Today", Color(0xFFFF7A00), true),
-        HistoryTransaction("5", "Grocery Store", "Food", "87.45", "May 7", Color(0xFFFF7A00), true)
-    )
+    LaunchedEffect(searchQuery) {
+        if (searchQuery.isNotBlank()) {
+            isLoading = true
+            repository.getRecentTransactions(50, search = searchQuery)
+                .onSuccess { transactions ->
+                    searchResults = transactions.map { t ->
+                        val parsedColor = try {
+                            Color(android.graphics.Color.parseColor(t.category?.color ?: "#64748B"))
+                        } catch (_: IllegalArgumentException) {
+                            Color(0xFF64748B)
+                        }
+                        HistoryTransaction(
+                            id = t.id,
+                            title = t.description?.takeIf { it.isNotBlank() } ?: (t.category?.name ?: t.type),
+                            category = t.category?.name ?: t.type,
+                            amount = NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(t.amount),
+                            date = t.transactionDate.take(10),
+                            iconBgColor = parsedColor,
+                            isExpense = t.type == "EXPENSE",
+                            rawAmount = t.amount
+                        )
+                    }
+                    errorMessage = null
+                }
+                .onFailure {
+                    errorMessage = it.message ?: "Failed to execute search."
+                }
+            isLoading = false
+        } else {
+            searchResults = emptyList()
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -80,29 +116,52 @@ fun SearchScreen(
                 .fillMaxSize()
                 .background(Color.White)
         ) {
-            Divider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+            HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            Text(
-                text = "Found ${searchResults.size} results",
-                fontSize = 14.sp,
-                color = Color(0xFF64748B),
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(searchResults) { transaction ->
-                    HistoryTransactionItem(
-                        transaction = transaction,
-                        onClick = { onTransactionClick(transaction) }
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                errorMessage?.let { msg ->
+                    Text(
+                        text = msg,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 24.dp)
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (searchQuery.isNotBlank()) {
+                    Text(
+                        text = "Found ${searchResults.size} results",
+                        fontSize = 14.sp,
+                        color = Color(0xFF64748B),
+                        modifier = Modifier.padding(horizontal = 24.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (searchResults.isEmpty() && searchQuery.isNotBlank()) {
+                    Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                        Text("No transactions found matching your search.", color = Color(0xFF64748B), fontSize = 15.sp)
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(searchResults) { transaction ->
+                            HistoryTransactionItem(
+                                transaction = transaction,
+                                onClick = { onTransactionClick(transaction) }
+                            )
+                        }
+                    }
                 }
             }
         }

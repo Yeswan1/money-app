@@ -84,6 +84,275 @@ export class ReportsService {
       take: 5,
     });
 
+    // 5. Dynamic Alerts and Tips
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { currency: true, role: true, profile: true },
+    });
+    const currency = user?.currency || 'INR';
+    const symbol = currency === 'USD' ? '$' : '₹';
+
+    const alerts: any[] = [];
+    const tips: any[] = [];
+
+    // 5a. Budget overrun and near-limit alerts
+    for (const ab of activeBudgets) {
+      if (ab.spent > ab.limit) {
+        alerts.push({
+          title: `${ab.categoryName} Exceeded`,
+          message: `You have exceeded your ${symbol}${ab.limit} ${ab.categoryName} budget by ${symbol}${Math.round(ab.spent - ab.limit)}.`,
+          isCritical: true,
+          time: 'Just now',
+        });
+      } else if (ab.spent >= ab.limit * 0.8 && ab.limit > 0) {
+        alerts.push({
+          title: `${ab.categoryName} Near Limit`,
+          message: `You've used ${Math.round(ab.utilizationPercentage)}% of your ${ab.categoryName} budget.`,
+          isCritical: false,
+          time: 'Today',
+        });
+      }
+    }
+
+    // 5b. Unusual spending checks
+    const prevMonth = month === 1 ? 12 : month - 1;
+    const prevYear = month === 1 ? year - 1 : year;
+    const startOfPrevMonth = new Date(prevYear, prevMonth - 1, 1);
+    const endOfPrevMonth = new Date(prevYear, prevMonth, 0);
+
+    const prevMonthCatAgg = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: {
+        userId,
+        type: 'EXPENSE',
+        deletedAt: null,
+        transactionDate: {
+          gte: startOfPrevMonth,
+          lte: endOfPrevMonth,
+        },
+      },
+      _sum: { amount: true },
+    });
+
+    const prevMonthSpending: Record<string, number> = {};
+    for (const group of prevMonthCatAgg) {
+      if (group.categoryId && group._sum.amount) {
+        prevMonthSpending[group.categoryId] = Number(group._sum.amount);
+      }
+    }
+
+    const thisMonthCatAgg = await this.prisma.transaction.groupBy({
+      by: ['categoryId'],
+      where: {
+        userId,
+        type: 'EXPENSE',
+        deletedAt: null,
+        transactionDate: {
+          gte: startOfMonth,
+          lte: endOfMonth,
+        },
+      },
+      _sum: { amount: true },
+    });
+
+    for (const group of thisMonthCatAgg) {
+      const catId = group.categoryId;
+      if (!catId || !group._sum.amount) continue;
+      const spentThisMonth = Number(group._sum.amount);
+      const spentLastMonth = prevMonthSpending[catId] || 0;
+
+      if (spentLastMonth > 0 && spentThisMonth > spentLastMonth * 1.3 && spentThisMonth > 50) {
+        const category = await this.prisma.category.findUnique({ where: { id: catId } });
+        if (category) {
+          const percentIncrease = ((spentThisMonth - spentLastMonth) / spentLastMonth) * 100;
+          alerts.push({
+            title: `Unusual Spending`,
+            message: `Your ${category.name} spending was ${Math.round(percentIncrease)}% higher than last month.`,
+            isCritical: true,
+            time: 'This month',
+          });
+        }
+      }
+    }
+
+    // 5bb. Role-specific alerts
+    if (user) {
+      if (user.role === 'STUDENT' && user.profile) {
+        const allowance = Number(user.profile.monthlyAllowance || 0);
+        if (allowance > 0) {
+          const daysLeft = endOfMonth.getDate() - today.getDate() + 1;
+          const remainingAllowance = allowance - monthlyExpenses;
+          const safeSpend = daysLeft > 0 ? Math.max(0, Math.round(remainingAllowance / daysLeft)) : 0;
+          alerts.push({
+            title: 'Pocket Money Safe-to-Spend',
+            message: `Your monthly allowance is halfway through, but you have ${daysLeft} days left. Safe-to-spend limit is ${symbol}${safeSpend}/day.`,
+            isCritical: remainingAllowance < (allowance * 0.2),
+            time: 'Today',
+          });
+        }
+      } else if (user.role === 'PROFESSIONAL' && user.profile) {
+        const income = Number(user.profile.monthlyIncome || 0);
+        if (income > 0 && monthlyIncome > 0) {
+          const allocationAmount = Math.round(monthlyIncome * 0.15);
+          alerts.push({
+            title: 'Payday Optimization',
+            message: `Your monthly salary was credited! Would you like to allocate ${symbol}${allocationAmount} to your active savings goals?`,
+            isCritical: false,
+            time: 'Today',
+          });
+        }
+      } else if (user.role === 'HOMEMAKER' && user.profile) {
+        const homemakerBudget = Number(user.profile.monthlyBudget || 0);
+        if (homemakerBudget > 0 && monthlyExpenses > 0) {
+          const dayOfMonth = today.getDate();
+          const projectedExpenses = (monthlyExpenses / dayOfMonth) * endOfMonth.getDate();
+          if (projectedExpenses > homemakerBudget) {
+            const projectedOverrun = Math.round(projectedExpenses - homemakerBudget);
+            const percentOverrun = Math.round((projectedOverrun / homemakerBudget) * 100);
+            alerts.push({
+              title: 'Weekly Household Projection',
+              message: `Based on grocery purchases from Week 1 and 2, your household spending will likely exceed the monthly budget by ${percentOverrun}% if velocity continues.`,
+              isCritical: true,
+              time: 'Today',
+            });
+          }
+        }
+      }
+    }
+
+    if (alerts.length === 0) {
+      alerts.push({
+        title: 'All Budgets Healthy',
+        message: 'Great job! None of your budgets are exceeded or near limit.',
+        isCritical: false,
+        time: 'Just now',
+      });
+    }
+
+    // 5c. Smart saving tips
+    let foodExpenses = 0;
+    const foodCats = await this.prisma.category.findMany({
+      where: {
+        name: {
+          mode: 'insensitive',
+          in: ['food', 'dining', 'dining out', 'cafe', 'restaurant', 'groceries'],
+        },
+      },
+    });
+    if (foodCats.length > 0) {
+      const foodSpentAgg = await this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: {
+          userId,
+          categoryId: { in: foodCats.map(c => c.id) },
+          type: 'EXPENSE',
+          deletedAt: null,
+          transactionDate: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+      });
+      foodExpenses = foodSpentAgg._sum.amount ? Number(foodSpentAgg._sum.amount) : 0;
+    }
+
+    if (foodExpenses > 150) {
+      tips.push({
+        title: 'Reduce Dining Out',
+        message: `You spent ${symbol}${Math.round(foodExpenses)} on Food/Dining this month. Cooking at home more often could save you some money.`,
+        color: '#3B82F6',
+        impact: 'High Impact',
+      });
+    }
+
+    const activeSubs = await this.prisma.subscription.findMany({
+      where: { userId, isActive: true },
+    });
+    if (activeSubs.length > 0) {
+      const totalSubsSpent = activeSubs.reduce((sum, s) => sum + Number(s.amount), 0);
+      tips.push({
+        title: 'Cancel Unused Subscriptions',
+        message: `You have ${activeSubs.length} active subscription(s) costing you ${symbol}${Math.round(totalSubsSpent)}/mo. Cancel any you haven't used recently.`,
+        color: '#10B981',
+        impact: 'Medium Impact',
+      });
+    }
+
+    const activeGoalsCount = await this.prisma.savingsGoal.count({
+      where: { userId, isCompleted: false },
+    });
+    if (activeGoalsCount === 0) {
+      tips.push({
+        title: 'Set up a Savings Goal',
+        message: `You don't have any active savings goals. Creating a goal can help you stay motivated to save!`,
+        color: '#F59E0B',
+        impact: 'Medium Impact',
+      });
+    }
+
+    let utilityExpenses = 0;
+    const utilityCats = await this.prisma.category.findMany({
+      where: {
+        name: {
+          mode: 'insensitive',
+          in: ['utilities', 'utility', 'bills', 'electricity', 'water', 'gas'],
+        },
+      },
+    });
+    if (utilityCats.length > 0) {
+      const utilitySpentAgg = await this.prisma.transaction.aggregate({
+        _sum: { amount: true },
+        where: {
+          userId,
+          categoryId: { in: utilityCats.map(c => c.id) },
+          type: 'EXPENSE',
+          deletedAt: null,
+          transactionDate: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+      });
+      utilityExpenses = utilitySpentAgg._sum.amount ? Number(utilitySpentAgg._sum.amount) : 0;
+    }
+
+    if (utilityExpenses > 0) {
+      tips.push({
+        title: 'Energy Efficiency',
+        message: `Your utility spending is ${symbol}${Math.round(utilityExpenses)} this month. Adjusting thermostats or lights could save you up to 10%.`,
+        color: '#F59E0B',
+        impact: 'Low Impact',
+      });
+    }
+
+    const generalTips = [
+      {
+        title: 'Track Every Expense',
+        message: 'Logging even the smallest cash transactions helps pinpoint where your money goes.',
+        color: '#64748B',
+        impact: 'Low Impact',
+      },
+      {
+        title: '50/30/20 Rule',
+        message: 'Try budgeting 50% of income for needs, 30% for wants, and 20% for savings.',
+        color: '#8B5CF6',
+        impact: 'High Impact',
+      },
+      {
+        title: 'Build Emergency Fund',
+        message: 'Aim to save 3-6 months of living expenses for unexpected situations.',
+        color: '#EF4444',
+        impact: 'High Impact',
+      }
+    ];
+
+    for (const gt of generalTips) {
+      if (tips.length >= 3) break;
+      if (!tips.some(t => t.title === gt.title)) {
+        tips.push(gt);
+      }
+    }
+
     return {
       monthlySpent: monthlyExpenses,
       monthlyIncome,
@@ -104,6 +373,8 @@ export class ReportsService {
         color: t.category.color,
         icon: t.category.icon,
       })),
+      alerts,
+      tips,
     };
   }
 

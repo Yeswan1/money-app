@@ -79,6 +79,7 @@ export class UsersService {
     const {
       name,
       currency,
+      role,
       notificationsEnabled,
       budgetAlerts,
       goalReminders,
@@ -89,12 +90,13 @@ export class UsersService {
 
     return await this.prisma.$transaction(async (tx) => {
       // Update general user fields
-      if (name !== undefined || currency !== undefined) {
+      if (name !== undefined || currency !== undefined || role !== undefined) {
         await tx.user.update({
           where: { id: userId },
           data: {
             name: name || undefined,
             currency: currency || undefined,
+            role: role || undefined,
           },
         });
       }

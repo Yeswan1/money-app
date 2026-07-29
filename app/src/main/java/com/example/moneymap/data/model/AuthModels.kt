@@ -22,6 +22,10 @@ data class RefreshRequest(
     val refreshToken: String
 )
 
+data class GoogleSignInRequest(
+    val idToken: String
+)
+
 data class LoginResponse(
     val user: UserDto,
     val accessToken: String,
@@ -96,7 +100,9 @@ data class SavingsGoalDto(
     val name: String,
     val targetAmount: Double,
     val currentAmount: Double,
-    val targetDate: String?
+    val targetDate: String?,
+    val icon: String? = null,
+    val color: String? = null
 )
 
 data class SendChatMessageRequest(
@@ -165,6 +171,7 @@ data class NotificationPreferenceDto(
 data class UpdateSettingsRequest(
     val name: String? = null,
     val currency: String? = null,
+    val role: String? = null,
     val notificationsEnabled: Boolean? = null,
     val budgetAlerts: Boolean? = null,
     val goalReminders: Boolean? = null,
@@ -173,13 +180,43 @@ data class UpdateSettingsRequest(
     val monthlyReport: Boolean? = null
 )
 
+data class UpdateProfileRequest(
+    val institution: String? = null,
+    val yearOfStudy: String? = null,
+    val monthlyAllowance: Double? = null,
+    val companyName: String? = null,
+    val jobTitle: String? = null,
+    val monthlyIncome: Double? = null,
+    val householdSize: Int? = null,
+    val monthlyBudget: Double? = null,
+    val primaryCategories: List<String>? = null,
+    val financialGoal: String? = null,
+    val onboardingCompleted: Boolean? = null
+)
+
 data class DashboardStatsResponse(
     val monthlySpent: Double,
     val monthlyIncome: Double,
     val netSavings: Double,
     val savingsOverview: SavingsOverviewDto,
     val budgets: List<BudgetSummaryDto>,
-    val recentTransactions: List<DashboardTransactionDto>
+    val recentTransactions: List<DashboardTransactionDto>,
+    val alerts: List<BudgetAlertDto> = emptyList(),
+    val tips: List<SavingTipDto> = emptyList()
+)
+
+data class BudgetAlertDto(
+    val title: String,
+    val message: String,
+    val isCritical: Boolean,
+    val time: String
+)
+
+data class SavingTipDto(
+    val title: String,
+    val message: String,
+    val color: String,
+    val impact: String
 )
 
 data class SavingsOverviewDto(
@@ -205,4 +242,82 @@ data class DashboardTransactionDto(
     val category: String,
     val color: String,
     val icon: String
+)
+
+data class ForgotPasswordRequest(
+    val email: String
+)
+
+data class ForgotPasswordResponse(
+    val message: String
+)
+
+data class ResetPasswordRequest(
+    val email: String,
+    val otp: String,
+    val newPassword: String
+)
+
+data class WeeklyReportResponse(
+    val totalSpent: Double,
+    val averageDailySpent: Double,
+    val dailyTrend: List<DailyTrendDto>,
+    val breakdown: List<CategoryBreakdownDto>
+)
+
+data class DailyTrendDto(
+    val day: String,
+    val amount: Double
+)
+
+data class CategoryBreakdownDto(
+    val category: String,
+    val amount: Double,
+    val percentage: Double,
+    val color: String,
+    val icon: String
+)
+
+data class MonthlyReportResponse(
+    val totalSpent: Double,
+    val previousMonthSpent: Double,
+    val percentageChange: Double,
+    val breakdown: List<CategoryBreakdownDto>
+)
+
+data class SpendingTrendDto(
+    val monthName: String,
+    val year: Int,
+    val expenses: Double,
+    val income: Double,
+    val savings: Double
+)
+
+data class BudgetDto(
+    val id: String,
+    val categoryId: String,
+    val categoryName: String,
+    val color: String,
+    val icon: String,
+    val limit: Double,
+    val spent: Double,
+    val remaining: Double,
+    val utilizationPercentage: Double
+)
+
+data class BudgetSummaryResponse(
+    val totalBudgeted: Double,
+    val totalSpent: Double,
+    val remainingBudget: Double,
+    val overallUtilization: Double,
+    val breakdown: List<BudgetDto>
+)
+
+data class CreateCategoryRequest(
+    val name: String,
+    val color: String
+)
+
+data class UpdateSavingsGoalRequest(
+    val currentAmount: Double
 )

@@ -6,19 +6,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.model.UpdateProfileRequest
+import com.example.moneymap.data.repository.MoneyMapRepository
 import com.example.moneymap.ui.theme.Primary
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileCompletionScreen(onContinue: () -> Unit) {
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    val scope = rememberCoroutineScope()
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     Surface(color = Color.White, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -68,15 +78,46 @@ fun ProfileCompletionScreen(onContinue: () -> Unit) {
 
             Spacer(modifier = Modifier.height(56.dp))
 
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
             Button(
-                onClick = onContinue,
+                onClick = {
+                    isSaving = true
+                    errorMessage = null
+                    scope.launch {
+                        repository.updateProfile(UpdateProfileRequest(onboardingCompleted = true))
+                            .onSuccess {
+                                isSaving = false
+                                onContinue()
+                            }
+                            .onFailure {
+                                isSaving = false
+                                errorMessage = it.message ?: "Failed to save onboarding completion state."
+                            }
+                    }
+                },
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Go to Dashboard", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text("Go to Dashboard", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
         }
     }

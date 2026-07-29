@@ -32,3 +32,11 @@ hs_err_pid*.log
 replay_pid*.log
 compile_error.txt
 compile_info.txt
+
+# Automation Framework Exclusions
+node_modules/
+automation/node_modules/
+automation/Test Results/
+automation/reports/
+automation/target/
+

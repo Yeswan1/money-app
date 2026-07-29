@@ -34,11 +34,11 @@ fun StudentDashboardScreen(
                 StudentHeader()
                 BalanceCard(
                     title = "Student Allowance",
-                    amount = "$450.00",
+                    amount = "₹450.00",
                     sub1Title = "Spent",
-                    sub1Amount = "$125.50",
+                    sub1Amount = "₹125.50",
                     sub2Title = "Saved",
-                    sub2Amount = "$324.50"
+                    sub2Amount = "₹324.50"
                 )
             }
 

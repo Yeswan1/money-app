@@ -2,9 +2,13 @@ package com.example.moneymap.data.repository
 
 import android.content.Context
 import com.example.moneymap.data.api.MoneyMapApiClient
+import com.example.moneymap.data.model.GoogleSignInRequest
 import com.example.moneymap.data.model.LoginRequest
 import com.example.moneymap.data.model.RegisterRequest
 import com.example.moneymap.data.model.UserDto
+import com.example.moneymap.data.model.ForgotPasswordRequest
+import com.example.moneymap.data.model.ForgotPasswordResponse
+import com.example.moneymap.data.model.ResetPasswordRequest
 import com.example.moneymap.data.session.AuthSession
 import retrofit2.HttpException
 import java.io.IOException
@@ -38,6 +42,36 @@ class AuthRepository(context: Context) {
             session.saveTokens(data.accessToken, data.refreshToken)
             session.saveUser(data.user)
             data.user
+        }.mapError()
+    }
+
+    suspend fun googleSignIn(idToken: String): Result<UserDto> {
+        return runCatching {
+            val response = api.googleSignIn(GoogleSignInRequest(idToken = idToken))
+            val data = response.data ?: error("Google sign-in response was empty")
+            session.saveTokens(data.accessToken, data.refreshToken)
+            session.saveUser(data.user)
+            data.user
+        }.mapError()
+    }
+
+    suspend fun forgotPassword(email: String): Result<String> {
+        return runCatching {
+            val response = api.forgotPassword(ForgotPasswordRequest(email = email.trim()))
+            response.data?.message ?: "If the email is registered, an OTP has been generated."
+        }.mapError()
+    }
+
+    suspend fun resetPassword(email: String, otp: String, newPassword: String): Result<Unit> {
+        return runCatching {
+            api.resetPassword(
+                ResetPasswordRequest(
+                    email = email.trim(),
+                    otp = otp.trim(),
+                    newPassword = newPassword
+                )
+            )
+            Unit
         }.mapError()
     }
 

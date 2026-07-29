@@ -1,0 +1,14 @@
+{
+  "platformName": "Android",
+  "automationName": "UiAutomator2",
+  "deviceName": "Android Emulator",
+  "app": "c:/Users/surya/AndroidStudioProjects/Moneymap/app/build/outputs/apk/debug/app-debug.apk",
+  "appPackage": "com.example.moneymap",
+  "appActivity": "com.example.moneymap.MainActivity",
+  "noReset": false,
+  "fullReset": false,
+  "autoGrantPermissions": true,
+  "newCommandTimeout": 300,
+  "systemPort": 8200,
+  "adbExecTimeout": 120000
+}

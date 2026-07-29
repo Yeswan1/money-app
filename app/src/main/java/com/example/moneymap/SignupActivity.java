@@ -25,7 +25,9 @@ public class SignupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
-        
+
+        // Allow screenshots on this screen
+        getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -43,6 +45,10 @@ public class SignupActivity extends AppCompatActivity {
         findViewById(R.id.signup_button).setOnClickListener(v -> {
             startActivity(new Intent(SignupActivity.this, OnboardingActivity.class));
         });
+
+        // Password visibility toggle
+        setupPasswordToggle(R.id.password_input, R.id.password_toggle);
+        setupPasswordToggle(R.id.confirm_password_input, R.id.confirm_password_toggle);
     }
 
     private void setupTermsAndConditions(TextView textView) {
@@ -94,5 +100,25 @@ public class SignupActivity extends AppCompatActivity {
         textView.setText(spannableString);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
         textView.setHighlightColor(Color.TRANSPARENT);
+    }
+
+    private void setupPasswordToggle(int inputId, int toggleId) {
+        android.widget.EditText input = findViewById(inputId);
+        android.widget.ImageView toggle = findViewById(toggleId);
+        toggle.setOnClickListener(v -> {
+            if (input.getInputType() == (android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD)) {
+                // Show password
+                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                toggle.setImageResource(R.drawable.ic_eye_off);
+                toggle.setContentDescription("Hide password");
+            } else {
+                // Hide password
+                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                toggle.setImageResource(R.drawable.ic_eye);
+                toggle.setContentDescription("Show password");
+            }
+            // Keep cursor at end
+            input.setSelection(input.getText().length());
+        });
     }
 }

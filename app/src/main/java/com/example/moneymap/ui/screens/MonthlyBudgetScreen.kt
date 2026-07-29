@@ -9,19 +9,41 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.repository.MoneyMapRepository
+import com.example.moneymap.data.model.BudgetSummaryResponse
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonthlyBudgetScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    var summary by remember { mutableStateOf<BudgetSummaryResponse?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    val calendar = remember { Calendar.getInstance() }
+    val month = calendar.get(Calendar.MONTH) + 1
+    val year = calendar.get(Calendar.YEAR)
+
+    LaunchedEffect(Unit) {
+        repository.getBudgetSummary(month, year).onSuccess {
+            summary = it
+            isLoading = false
+        }.onFailure {
+            isLoading = false
+        }
+    }
+
     Scaffold(
         containerColor = Color.White,
         topBar = {
@@ -58,61 +80,89 @@ fun MonthlyBudgetScreen(onBack: () -> Unit) {
             HorizontalDivider(color = Color(0xFFF1F5F9))
             
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Total Monthly Budget
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(300.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF3B82F6))
+                }
+            } else {
+                val totalBudgeted = summary?.totalBudgeted ?: 0.0
+                val totalSpent = summary?.totalSpent ?: 0.0
+                val remainingBudget = summary?.remainingBudget ?: 0.0
+                val breakdown = summary?.breakdown ?: emptyList()
+
+                // Total Monthly Budget
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Total Monthly Budget",
+                        fontSize = 14.sp,
+                        color = Color(0xFF64748B),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = String.format("₹%.2f", totalBudgeted),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = String.format("₹%.2f Used • ₹%.2f Remaining", totalSpent, remainingBudget),
+                        fontSize = 14.sp,
+                        color = Color(0xFF3B82F6),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
                 Text(
-                    text = "Total Monthly Budget",
-                    fontSize = 14.sp,
-                    color = Color(0xFF64748B),
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "$4,000.00",
-                    fontSize = 40.sp,
+                    text = "Category Allocations",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
+                    color = Color(0xFF0F172A),
+                    modifier = Modifier.padding(horizontal = 24.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "$2,876.55 Used • $1,123.45 Remaining",
-                    fontSize = 14.sp,
-                    color = Color(0xFF3B82F6),
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Text(
-                text = "Category Allocations",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A),
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            val categories = listOf(
-                BudgetAllocation("Housing & Rent", "$1,200", "$1,500", 0.8f, Color(0xFF8B5CF6)),
-                BudgetAllocation("Food & Dining", "$450", "$600", 0.75f, Color(0xFFFF7A00)),
-                BudgetAllocation("Transportation", "$120", "$200", 0.6f, Color(0xFF3B82F6)),
-                BudgetAllocation("Shopping", "$340", "$400", 0.85f, Color(0xFFEC4899)),
-                BudgetAllocation("Utilities & Bills", "$210", "$250", 0.84f, Color(0xFFEAB308)),
-                BudgetAllocation("Entertainment", "$60", "$150", 0.4f, Color(0xFF14B8A6))
-            )
-            
-            categories.forEach { allocation ->
-                BudgetAllocationItem(allocation)
+                
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (breakdown.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No category budgets set for this month.", color = Color(0xFF64748B), fontSize = 15.sp)
+                    }
+                } else {
+                    breakdown.forEach { item ->
+                        val color = try {
+                            Color(android.graphics.Color.parseColor(item.color))
+                        } catch (e: Exception) {
+                            Color(0xFF3B82F6)
+                        }
+                        
+                        BudgetAllocationItem(
+                            allocation = BudgetAllocation(
+                                name = item.categoryName,
+                                spent = String.format("₹%.2f", item.spent),
+                                total = String.format("₹%.2f", item.limit),
+                                progress = item.utilizationPercentage.toFloat() / 100f,
+                                color = color
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(40.dp))
             }
-            
-            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
@@ -148,7 +198,7 @@ fun BudgetAllocationItem(allocation: BudgetAllocation) {
         Spacer(modifier = Modifier.height(12.dp))
         
         LinearProgressIndicator(
-            progress = allocation.progress,
+            progress = Math.min(1.0f, allocation.progress),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp)

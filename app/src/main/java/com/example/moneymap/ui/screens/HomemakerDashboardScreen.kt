@@ -39,11 +39,11 @@ fun HomemakerDashboardScreen(
                 HomemakerHeader()
                 BalanceCard(
                     title = "Household Budget",
-                    amount = "$2,500.00",
+                    amount = "₹2,500.00",
                     sub1Title = "Spent",
-                    sub1Amount = "$1,150.00",
+                    sub1Amount = "₹1,150.00",
                     sub2Title = "Remaining",
-                    sub2Amount = "$1,350.00"
+                    sub2Amount = "₹1,350.00"
                 )
             }
 

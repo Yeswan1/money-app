@@ -7,10 +7,19 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import android.Manifest;
+import android.os.Build;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.view.WindowInsetsCompat;
 import com.google.android.material.button.MaterialButton;
 
 public class NotificationPermissionActivity extends AppCompatActivity {
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                proceedToNextStep();
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,7 +35,13 @@ public class NotificationPermissionActivity extends AppCompatActivity {
         MaterialButton btnAllow = findViewById(R.id.btn_allow);
         TextView btnNotNow = findViewById(R.id.btn_not_now);
 
-        btnAllow.setOnClickListener(v -> proceedToNextStep());
+        btnAllow.setOnClickListener(v -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                proceedToNextStep();
+            }
+        });
         btnNotNow.setOnClickListener(v -> proceedToNextStep());
     }
 

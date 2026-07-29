@@ -1,0 +1,22 @@
+{
+  "validUser": {
+    "fullName": "Test User",
+    "email": "user@moneymap.com",
+    "password": "Password123!"
+  },
+  "invalidUsers": [
+    { "email": "", "password": "", "expectedError": "Please enter your email and password" },
+    { "email": "invalid-email", "password": "Password123!", "expectedError": "Invalid email address" },
+    { "email": "user@moneymap.com", "password": "wrongpassword", "expectedError": "Invalid credentials" }
+  ],
+  "signupValidations": [
+    { "fullName": "", "email": "test@test.com", "password": "Pass", "confirm": "Pass", "expectedError": "Full name is required" },
+    { "fullName": "John", "email": "test@test.com", "password": "Pass", "confirm": "Diff", "expectedError": "Passwords do not match" }
+  ],
+  "roles": ["student", "professional", "homemaker", "personal"],
+  "testTransactions": [
+    { "type": "expense", "amount": "150.00", "category": "Food", "note": "Weekly groceries" },
+    { "type": "income", "amount": "1200.00", "category": "Gifts", "note": "Birthday cash" },
+    { "type": "expense", "amount": "45.50", "category": "Transport", "note": "Cab ride" }
+  ]
+}

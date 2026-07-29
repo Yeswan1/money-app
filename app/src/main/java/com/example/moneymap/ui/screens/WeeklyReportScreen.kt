@@ -64,7 +64,7 @@ fun WeeklyReportScreen(onBack: () -> Unit) {
                         color = Color(0xFF64748B)
                     )
                     Text(
-                        text = "$642.30",
+                        text = "₹642.30",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
@@ -96,9 +96,9 @@ fun WeeklyReportScreen(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                CategoryReportItem("Food", "$210", 32, Color(0xFFFF7A00))
-                CategoryReportItem("Shopping", "$180", 28, Color(0xFFEC4899))
-                CategoryReportItem("Bills", "$90", 14, Color(0xFFEAB308))
+                CategoryReportItem("Food", "₹210", 32, Color(0xFFFF7A00))
+                CategoryReportItem("Shopping", "₹180", 28, Color(0xFFEC4899))
+                CategoryReportItem("Bills", "₹90", 14, Color(0xFFEAB308))
             }
         }
     }

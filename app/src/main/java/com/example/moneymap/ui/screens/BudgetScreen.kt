@@ -43,7 +43,6 @@ fun BudgetScreen(
     onCreateGoalClick: () -> Unit = {},
     onGoalClick: (String) -> Unit = {},
     onAlertsClick: () -> Unit = {},
-    onTipsClick: () -> Unit = {},
     onChatClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -90,15 +89,6 @@ fun BudgetScreen(
                 )
                 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(Color(0xFFF1F5F9), CircleShape)
-                            .clickable { onTipsClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Lightbulb, contentDescription = "Tips", tint = Color(0xFFEAB308))
-                    }
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -349,7 +339,7 @@ fun BudgetOverviewCard(stats: DashboardStatsResponse?) {
 }
 
 private fun formatBudgetMoney(amount: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale.US).format(amount)
+    return NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(amount)
 }
 
 @Composable

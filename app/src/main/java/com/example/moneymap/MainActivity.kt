@@ -74,6 +74,11 @@ fun MainAppNavHost() {
                         popUpTo("login") { inclusive = true }
                     }
                 },
+                onGoogleLoginSuccess = {
+                    navController.navigate("role_selection") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                },
                 onNavigateToSignup = { navController.navigate("signup") },
                 onNavigateToForgotPassword = { navController.navigate("forgot_password") }
             )
@@ -148,7 +153,7 @@ fun MainAppNavHost() {
                 onAddTransaction = { navController.navigate("add_transaction") },
                 onNavigateToHistory = { navController.navigate("history") },
                 onChatClick = { navController.navigate("chatbot") },
-                onTransactionClick = { navController.navigate("expense_details") },
+                onTransactionClick = { transactionId -> navController.navigate("expense_details/$transactionId") },
                 onSearchClick = { navController.navigate("search") },
                 onFilterClick = { navController.navigate("filters") },
                 onCategoriesClick = { navController.navigate("categories") },
@@ -159,7 +164,7 @@ fun MainAppNavHost() {
         composable("history") {
             HistoryScreen(
                 onBack = { navController.popBackStack() },
-                onTransactionClick = { navController.navigate("expense_details") },
+                onTransactionClick = { transaction -> navController.navigate("expense_details/${transaction.id}") },
                 onSearchClick = { navController.navigate("search") },
                 onFilterClick = { navController.navigate("filters") },
                 onCategoriesClick = { navController.navigate("categories") },
@@ -196,19 +201,23 @@ fun MainAppNavHost() {
                 }
             )
         }
-        composable("expense_details") {
+        composable("expense_details/{transactionId}") { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getString("transactionId") ?: ""
             ExpenseDetailsScreen(
+                transactionId = transactionId,
                 onBack = { navController.popBackStack() },
-                onEdit = { navController.navigate("edit_expense") },
+                onEdit = { navController.navigate("edit_expense/$transactionId") },
                 onDeleteSuccess = { navController.popBackStack() }
             )
         }
-        composable("edit_expense") {
+        composable("edit_expense/{transactionId}") { backStackEntry ->
+            val transactionId = backStackEntry.arguments?.getString("transactionId") ?: ""
             EditExpenseScreen(
+                transactionId = transactionId,
                 onBack = { navController.popBackStack() },
                 onSave = {
                     navController.navigate("transaction_success") {
-                        popUpTo("edit_expense") { inclusive = true }
+                        popUpTo("edit_expense/{transactionId}") { inclusive = true }
                         launchSingleTop = true
                     }
                 }
@@ -217,7 +226,7 @@ fun MainAppNavHost() {
         composable("search") {
             SearchScreen(
                 onBack = { navController.popBackStack() },
-                onTransactionClick = { navController.navigate("expense_details") }
+                onTransactionClick = { transaction -> navController.navigate("expense_details/${transaction.id}") }
             )
         }
         composable("filters") {
@@ -236,7 +245,7 @@ fun MainAppNavHost() {
             CategoryDetailsScreen(
                 categoryName = categoryName,
                 onBack = { navController.popBackStack() },
-                onTransactionClick = { navController.navigate("expense_details") }
+                onTransactionClick = { transaction -> navController.navigate("expense_details/${transaction.id}") }
             )
         }
         composable("subscriptions") {
@@ -271,7 +280,6 @@ fun MainAppNavHost() {
         composable("budget_alerts") {
             BudgetAlertsScreen(onBack = { navController.popBackStack() })
         }
-        composable("smart_saving_tips") { SmartSavingTipsScreen(onBack = { navController.popBackStack() }) }
         composable("forgot_password") { ForgotPasswordScreen(onBack = { navController.popBackStack() }) }
         composable("overspending_warning") { 
             OverspendingWarningScreen(
@@ -297,7 +305,7 @@ fun MainContent(
     onAddTransaction: () -> Unit, 
     onNavigateToHistory: () -> Unit, 
     onChatClick: () -> Unit,
-    onTransactionClick: () -> Unit,
+    onTransactionClick: (String) -> Unit,
     onSearchClick: () -> Unit,
     onFilterClick: () -> Unit,
     onCategoriesClick: () -> Unit,
@@ -401,7 +409,15 @@ fun MainContent(
                     onSeeAllTransactions = onNavigateToHistory,
                     onNotificationClick = { onNavigate("budget_alerts") },
                     onChatClick = onChatClick,
-                    onBudgetClick = { onNavigate("budget") },
+                    onBudgetClick = {
+                        bottomNavController.navigate(BottomScreen.Budget.route) {
+                            popUpTo(bottomNavController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
                     onGroceryListClick = { onNavigate("categories") },
                     onFamilyAllowancesClick = { onNavigate("savings_goals") }
                 )
@@ -412,7 +428,7 @@ fun MainContent(
             composable(BottomScreen.Wallet.route) {
                 HistoryScreen(
                     onBack = { }, 
-                    onTransactionClick = { onTransactionClick() },
+                    onTransactionClick = { transaction -> onTransactionClick(transaction.id) },
                     onSearchClick = onSearchClick,
                     onFilterClick = onFilterClick,
                     onCategoriesClick = onCategoriesClick,
@@ -427,8 +443,7 @@ fun MainContent(
                     onViewAllGoalsClick = { onNavigate("savings_goals") },
                     onCreateGoalClick = { onNavigate("add_goal") },
                     onGoalClick = { goalName -> onNavigate("goal_progress/$goalName") },
-                    onAlertsClick = { onNavigate("budget_alerts") },
-                    onTipsClick = { onNavigate("smart_saving_tips") }
+                    onAlertsClick = { onNavigate("budget_alerts") }
                 )
             }
             composable(BottomScreen.Profile.route) {

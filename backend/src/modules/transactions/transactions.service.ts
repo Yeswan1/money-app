@@ -53,6 +53,14 @@ export class TransactionsService {
           },
         },
         {
+          category: {
+            name: {
+              contains: filters.search,
+              mode: 'insensitive',
+            },
+          },
+        },
+        {
           tags: {
             some: {
               tag: {

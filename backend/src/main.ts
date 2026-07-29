@@ -56,7 +56,7 @@ async function bootstrap() {
 
   // 6. Listen on designated port
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`🚀 MoneyMap Backend starting on: http://localhost:${port}/${apiPrefix}`);
   console.log(`📚 Swagger documentation at: http://localhost:${port}/${apiPrefix}/docs`);
 }

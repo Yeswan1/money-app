@@ -15,14 +15,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.model.UpdateProfileRequest
+import com.example.moneymap.data.model.UpdateSettingsRequest
+import com.example.moneymap.data.repository.MoneyMapRepository
 import com.example.moneymap.ui.theme.Primary
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomemakerSetupScreen(onBack: () -> Unit, onContinue: () -> Unit) {
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    val scope = rememberCoroutineScope()
+    var isSaving by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     var householdSize by remember { mutableStateOf("") }
     var monthlyBudget by remember { mutableStateOf("") }
     val categories = listOf("Groceries", "Utilities", "Education", "Healthcare")
@@ -96,7 +107,7 @@ fun HomemakerSetupScreen(onBack: () -> Unit, onContinue: () -> Unit) {
                 value = monthlyBudget,
                 onValueChange = { monthlyBudget = it },
                 placeholder = { Text("3000", color = Color(0xFF9CA3AF)) },
-                prefix = { Text("$ ", color = Color(0xFF6B7280)) },
+                prefix = { Text("₹ ", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -142,15 +153,59 @@ fun HomemakerSetupScreen(onBack: () -> Unit, onContinue: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
             Button(
-                onClick = onContinue,
+                onClick = {
+                    isSaving = true
+                    errorMessage = null
+                    scope.launch {
+                        val settingsRes = repository.updateSettings(
+                            UpdateSettingsRequest(role = "HOMEMAKER")
+                        )
+                        settingsRes.onSuccess {
+                            val profileRes = repository.updateProfile(
+                                UpdateProfileRequest(
+                                    householdSize = householdSize.toIntOrNull() ?: 1,
+                                    monthlyBudget = monthlyBudget.toDoubleOrNull() ?: 25000.0,
+                                    primaryCategories = selectedCategories.toList()
+                                )
+                            )
+                            profileRes.onSuccess {
+                                isSaving = false
+                                onContinue()
+                            }.onFailure {
+                                isSaving = false
+                                errorMessage = it.message ?: "Failed to save profile details."
+                            }
+                        }.onFailure {
+                            isSaving = false
+                            errorMessage = it.message ?: "Failed to update role settings."
+                        }
+                    }
+                },
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Primary)
             ) {
-                Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text("Continue", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
             }
         }
     }

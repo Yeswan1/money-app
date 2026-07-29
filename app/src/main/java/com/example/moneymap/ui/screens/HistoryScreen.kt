@@ -28,6 +28,10 @@ import com.example.moneymap.data.model.TransactionDto
 import com.example.moneymap.data.repository.MoneyMapRepository
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +47,7 @@ fun HistoryScreen(
     var searchQuery by remember { mutableStateOf("") }
     val context = LocalContext.current
     val repository = remember(context) { MoneyMapRepository(context) }
+    val scope = rememberCoroutineScope()
     var transactions by remember { mutableStateOf<List<HistoryTransaction>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -53,14 +58,27 @@ fun HistoryScreen(
         .filter { !it.isExpense }
         .sumOf { it.rawAmount }
 
-    LaunchedEffect(Unit) {
-        isLoading = true
-        repository.getRecentTransactions(50)
-            .onSuccess { loaded ->
-                transactions = loaded.map { it.toHistoryTransaction() }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch {
+                    if (transactions.isEmpty()) {
+                        isLoading = true
+                    }
+                    repository.getRecentTransactions(50)
+                        .onSuccess { loaded ->
+                            transactions = loaded.map { it.toHistoryTransaction() }
+                        }
+                        .onFailure { errorMessage = it.message ?: "Could not load transactions." }
+                    isLoading = false
+                }
             }
-            .onFailure { errorMessage = it.message ?: "Could not load transactions." }
-        isLoading = false
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     Scaffold(
@@ -301,7 +319,7 @@ data class HistoryTransaction(
     val date: String,
     val iconBgColor: Color,
     val isExpense: Boolean,
-    val rawAmount: Double = amount.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0
+    val rawAmount: Double = amount.replace("$", "").replace("₹", "").replace(",", "").toDoubleOrNull() ?: 0.0
 )
 
 private fun TransactionDto.toHistoryTransaction(): HistoryTransaction {
@@ -325,9 +343,9 @@ private fun TransactionDto.toHistoryTransaction(): HistoryTransaction {
 }
 
 private fun formatHistoryMoney(amount: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale.US).format(amount)
+    return NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(amount)
 }
 
 val allTransactions = listOf(
-    HistoryTransaction("1", "No database item", "Food", "$0.00", "Open app", Color(0xFFFF7A00), true)
+    HistoryTransaction("1", "No database item", "Food", "₹0.00", "Open app", Color(0xFFFF7A00), true)
 )

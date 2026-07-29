@@ -34,11 +34,11 @@ fun EmployeeDashboardScreen(
                 EmployeeHeader()
                 BalanceCard(
                     title = "Available Balance",
-                    amount = "$4,856.20",
+                    amount = "₹4,856.20",
                     sub1Title = "Spent",
-                    sub1Amount = "$2,143.80",
+                    sub1Amount = "₹2,143.80",
                     sub2Title = "Salary",
-                    sub2Amount = "$7,000.00"
+                    sub2Amount = "₹7,000.00"
                 )
             }
 

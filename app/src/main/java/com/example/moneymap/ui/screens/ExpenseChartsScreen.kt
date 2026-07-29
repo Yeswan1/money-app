@@ -108,7 +108,7 @@ fun ExpenseChartsScreen(onBack: () -> Unit) {
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text(text = pair.first, fontSize = 14.sp, color = Color(0xFF0F172A), fontWeight = FontWeight.Medium)
                                 }
-                                Text(text = "$${pair.second.toInt()}", fontSize = 14.sp, color = Color(0xFF0F172A), fontWeight = FontWeight.Bold)
+                                Text(text = "₹${pair.second.toInt()}", fontSize = 14.sp, color = Color(0xFF0F172A), fontWeight = FontWeight.Bold)
                             }
                         }
                     }

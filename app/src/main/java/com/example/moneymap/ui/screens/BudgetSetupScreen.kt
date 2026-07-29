@@ -241,7 +241,7 @@ fun BudgetCategoryCard(data: BudgetData, onAmountChange: (String) -> Unit) {
                 value = data.amount,
                 onValueChange = onAmountChange,
                 placeholder = { Text("0", color = Color(0xFF9CA3AF)) },
-                prefix = { Text("$ ", color = Color(0xFF6B7280)) },
+                prefix = { Text("₹ ", color = Color(0xFF6B7280)) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

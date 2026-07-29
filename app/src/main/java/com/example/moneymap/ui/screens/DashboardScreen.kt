@@ -28,7 +28,12 @@ import com.example.moneymap.data.model.UserProfileResponse
 import com.example.moneymap.data.repository.MoneyMapRepository
 import com.example.moneymap.ui.theme.*
 import java.text.NumberFormat
+import java.util.Calendar
 import java.util.Locale
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.launch
 
 @Composable
 fun DashboardScreen(
@@ -43,20 +48,34 @@ fun DashboardScreen(
 ) {
     val context = LocalContext.current
     val repository = remember(context) { MoneyMapRepository(context) }
+    val scope = rememberCoroutineScope()
     var profile by remember { mutableStateOf<UserProfileResponse?>(null) }
     var stats by remember { mutableStateOf<DashboardStatsResponse?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(Unit) {
-        isLoading = true
-        repository.getProfile()
-            .onSuccess { profile = it }
-            .onFailure { errorMessage = it.message ?: "Could not load profile." }
-        repository.getDashboardStats()
-            .onSuccess { stats = it }
-            .onFailure { errorMessage = it.message ?: "Could not load dashboard." }
-        isLoading = false
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch {
+                    if (profile == null) {
+                        isLoading = true
+                    }
+                    repository.getProfile()
+                        .onSuccess { profile = it }
+                        .onFailure { errorMessage = it.message ?: "Could not load profile." }
+                    repository.getDashboardStats()
+                        .onSuccess { stats = it }
+                        .onFailure { errorMessage = it.message ?: "Could not load dashboard." }
+                    isLoading = false
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     RealDashboardContent(
@@ -93,10 +112,28 @@ private fun RealDashboardContent(
         ) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
+                
+                val role = profile?.role?.uppercase(Locale.US) ?: "PERSONAL"
+                val greeting = remember {
+                    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+                    when {
+                        hour < 12 -> "Good Morning"
+                        hour < 17 -> "Good Afternoon"
+                        else -> "Good Evening"
+                    }
+                }
+                val greetingName = remember(profile?.name, role) {
+                    if (role == "STUDENT") {
+                        (profile?.name ?: "MoneyMap") + " 👋"
+                    } else {
+                        profile?.name ?: "MoneyMap User"
+                    }
+                }
+
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
-                    Text("Good Evening", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = greeting, fontSize = 14.sp, color = Color.Gray)
                     Text(
-                        text = profile?.name ?: "MoneyMap",
+                        text = greetingName,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF111827)
@@ -106,16 +143,54 @@ private fun RealDashboardContent(
                 val totalBudget = stats?.budgets?.sumOf { it.limit } ?: 0.0
                 val monthlySpent = stats?.monthlySpent ?: 0.0
                 val monthlyIncome = stats?.monthlyIncome ?: 0.0
-                val headlineAmount = if (totalBudget > 0.0) totalBudget else monthlyIncome
-                val remaining = if (totalBudget > 0.0) totalBudget - monthlySpent else stats?.netSavings ?: 0.0
+                val netSavings = stats?.netSavings ?: 0.0
+
+                val balanceTitle: String
+                val balanceAmount: String
+                val rightTitle: String
+                val rightAmount: String
+
+                when (role) {
+                    "STUDENT" -> {
+                        val allowance = profile?.profile?.monthlyAllowance ?: 5000.0
+                        balanceTitle = "Student Allowance"
+                        balanceAmount = formatMoney(allowance + monthlyIncome)
+                        rightTitle = "Saved"
+                        rightAmount = formatMoney((allowance + monthlyIncome - monthlySpent).coerceAtLeast(0.0))
+                    }
+                    "PROFESSIONAL" -> {
+                        val salary = profile?.profile?.monthlyIncome ?: 0.0
+                        balanceTitle = "Available Balance"
+                        balanceAmount = formatMoney((salary + monthlyIncome - monthlySpent).coerceAtLeast(0.0))
+                        rightTitle = "Salary"
+                        rightAmount = formatMoney(salary)
+                    }
+                    "HOMEMAKER" -> {
+                        val homemakerBudget = profile?.profile?.monthlyBudget ?: 25000.0
+                        balanceTitle = "Household Budget"
+                        balanceAmount = formatMoney(homemakerBudget)
+                        rightTitle = "Remaining"
+                        rightAmount = formatMoney((homemakerBudget + monthlyIncome - monthlySpent).coerceAtLeast(0.0))
+                    }
+                    else -> {
+                        val hasBudget = totalBudget > 0.0
+                        val headlineAmount = if (hasBudget) totalBudget else monthlyIncome
+                        val remaining = if (hasBudget) (totalBudget + monthlyIncome - monthlySpent) else netSavings
+                        
+                        balanceTitle = if (hasBudget) "Monthly Budget" else "This Month"
+                        balanceAmount = formatMoney(headlineAmount)
+                        rightTitle = if (hasBudget) "Remaining" else "Saved"
+                        rightAmount = formatMoney(remaining.coerceAtLeast(0.0))
+                    }
+                }
 
                 BalanceCard(
-                    title = if (totalBudget > 0.0) "Monthly Budget" else "This Month",
-                    amount = formatMoney(headlineAmount),
+                    title = balanceTitle,
+                    amount = balanceAmount,
                     sub1Title = "Spent",
                     sub1Amount = formatMoney(monthlySpent),
-                    sub2Title = if (totalBudget > 0.0) "Remaining" else "Saved",
-                    sub2Amount = formatMoney(remaining.coerceAtLeast(0.0))
+                    sub2Title = rightTitle,
+                    sub2Amount = rightAmount
                 )
             }
 
@@ -143,41 +218,110 @@ private fun RealDashboardContent(
 
             item {
                 Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        text = "Household Tools",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF111827)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        QuickActionCard(
-                            title = "Add Expense",
-                            icon = Icons.AutoMirrored.Filled.TrendingDown,
-                            iconBg = Color(0xFFDBEAFE),
-                            iconTint = Color(0xFF3B82F6),
-                            onClick = onAddTransaction,
-                            modifier = Modifier.weight(1f)
+                    val role = profile?.role?.uppercase(Locale.US) ?: "PERSONAL"
+                    val monthlySpent = stats?.monthlySpent ?: 0.0
+                    val monthlyIncome = stats?.monthlyIncome ?: 0.0
+                    val netSavings = stats?.netSavings ?: 0.0
+                    val totalBudget = stats?.budgets?.sumOf { it.limit } ?: 0.0
+
+                    if (role == "PROFESSIONAL") {
+                        val salary = profile?.profile?.monthlyIncome ?: 0.0
+                        val budgetLimitVal = if (totalBudget > 0.0) totalBudget else if (salary > 0.0) salary else 1.0
+                        val pct = ((monthlySpent / budgetLimitVal) * 100.0).toInt().coerceIn(0, 100)
+                        val savedAmount = if (monthlyIncome > 0.0) netSavings else (salary - monthlySpent)
+
+                        Text(
+                            text = "Professional Dashboard Stats",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827)
                         )
-                        QuickActionCard(
-                            title = "Grocery List",
-                            icon = Icons.Default.ShoppingCart,
-                            iconBg = Color(0xFFDCFCE7),
-                            iconTint = Color(0xFF16A34A),
-                            onClick = onGroceryListClick,
-                            modifier = Modifier.weight(1f)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            StatCard(
+                                title = "Saved This Month",
+                                value = formatMoney(savedAmount.coerceAtLeast(0.0)),
+                                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                                iconColor = Color(0xFF10B981),
+                                modifier = Modifier.weight(1f)
+                            )
+                            StatCard(
+                                title = "Budget Used",
+                                value = "$pct%",
+                                icon = Icons.Default.PieChart,
+                                iconColor = Color(0xFF8B5CF6),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else if (role == "STUDENT") {
+                        Text(
+                            text = "Quick Actions",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827)
                         )
-                        QuickActionCard(
-                            title = "Family Allowances",
-                            icon = Icons.Default.FamilyRestroom,
-                            iconBg = Color(0xFFFCE7F3),
-                            iconTint = Color(0xFFDB2777),
-                            onClick = onFamilyAllowancesClick,
-                            modifier = Modifier.weight(1f)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            QuickActionCard(
+                                title = "Add Expense",
+                                icon = Icons.AutoMirrored.Filled.TrendingDown,
+                                iconBg = Color(0xFFDBEAFE),
+                                iconTint = Color(0xFF3B82F6),
+                                onClick = onAddTransaction,
+                                modifier = Modifier.weight(1f)
+                            )
+                            QuickActionCard(
+                                title = "Budget Limits",
+                                icon = Icons.Default.PieChart,
+                                iconBg = Color(0xFFEDE9FE),
+                                iconTint = Color(0xFF8B5CF6),
+                                onClick = onBudgetClick,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = if (role == "HOMEMAKER") "Household Tools" else "Tools",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF111827)
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            QuickActionCard(
+                                title = "Add Expense",
+                                icon = Icons.AutoMirrored.Filled.TrendingDown,
+                                iconBg = Color(0xFFDBEAFE),
+                                iconTint = Color(0xFF3B82F6),
+                                onClick = onAddTransaction,
+                                modifier = Modifier.weight(1f)
+                            )
+                            QuickActionCard(
+                                title = "Grocery List",
+                                icon = Icons.Default.ShoppingCart,
+                                iconBg = Color(0xFFDCFCE7),
+                                iconTint = Color(0xFF16A34A),
+                                onClick = onGroceryListClick,
+                                modifier = Modifier.weight(1f)
+                            )
+                            QuickActionCard(
+                                title = "Family Allowances",
+                                icon = Icons.Default.FamilyRestroom,
+                                iconBg = Color(0xFFFCE7F3),
+                                iconTint = Color(0xFFDB2777),
+                                onClick = onFamilyAllowancesClick,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
             }
@@ -261,7 +405,7 @@ private fun DashboardTransactionDto.toDashboardTransaction(): DashboardTransacti
         title = description?.takeIf { it.isNotBlank() } ?: category,
         category = category,
         date = transactionDate.toShortDisplayDate(),
-        amount = NumberFormat.getNumberInstance(Locale.US).format(amount),
+        amount = NumberFormat.getNumberInstance(Locale("en", "IN")).format(amount),
         icon = iconForCategory(category),
         iconBg = colorFromBackend(color),
         isIncome = type == "INCOME",
@@ -269,7 +413,7 @@ private fun DashboardTransactionDto.toDashboardTransaction(): DashboardTransacti
 }
 
 private fun formatMoney(amount: Double): String {
-    return NumberFormat.getCurrencyInstance(Locale.US).format(amount)
+    return NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(amount)
 }
 
 private fun String.toShortDisplayDate(): String {
@@ -430,7 +574,7 @@ fun EmployeeStatsSection() {
     ) {
         StatCard(
             title = "Saved",
-            value = "$1,250",
+            value = "₹1,250",
             icon = Icons.AutoMirrored.Filled.TrendingUp,
             iconColor = Color(0xFF10B981),
             modifier = Modifier.weight(1f)
@@ -592,7 +736,7 @@ fun DashboardTransactionItem(transaction: DashboardTransaction) {
             )
         }
         Text(
-            text = (if (transaction.isIncome) "+" else "") + "$" + transaction.amount,
+            text = (if (transaction.isIncome) "+" else "") + "₹" + transaction.amount,
             fontSize = 17.sp,
             fontWeight = FontWeight.Bold,
             color = if (transaction.isIncome) Color(0xFF10B981) else Color(0xFF111827)

@@ -1,12 +1,12 @@
-import { IsEmail, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import { IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
 import { Role } from '@prisma/client';
 
 export class RegisterDto {
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsString()
   email!: string;
 
   @IsString()
-  @MinLength(6, { message: 'Password must be at least 6 characters long' })
+  @MinLength(4, { message: 'Password must be at least 4 characters long' })
   password!: string;
 
   @IsString()

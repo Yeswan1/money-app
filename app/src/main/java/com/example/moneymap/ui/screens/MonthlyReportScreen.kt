@@ -64,7 +64,7 @@ fun MonthlyReportScreen(onBack: () -> Unit) {
                         color = Color(0xFF64748B)
                     )
                     Text(
-                        text = "$2,876.50",
+                        text = "₹2,876.50",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
@@ -94,9 +94,9 @@ fun MonthlyReportScreen(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                CategoryReportItem("Rent", "$1,200", 42, Color(0xFF8B5CF6))
-                CategoryReportItem("Groceries", "$450", 16, Color(0xFFFF7A00))
-                CategoryReportItem("Utilities", "$340", 12, Color(0xFF3B82F6))
+                CategoryReportItem("Rent", "₹1,200", 42, Color(0xFF8B5CF6))
+                CategoryReportItem("Groceries", "₹450", 16, Color(0xFFFF7A00))
+                CategoryReportItem("Utilities", "₹340", 12, Color(0xFF3B82F6))
             }
         }
     }

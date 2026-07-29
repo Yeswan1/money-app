@@ -15,18 +15,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moneymap.ui.components.CustomAreaChart
 import com.example.moneymap.ui.components.CustomBarChart
 import com.example.moneymap.ui.components.CustomPieChart
+import com.example.moneymap.data.repository.MoneyMapRepository
+import com.example.moneymap.data.model.WeeklyReportResponse
+import com.example.moneymap.data.model.MonthlyReportResponse
+import com.example.moneymap.data.model.SpendingTrendDto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportsScreen() {
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     val tabs = listOf("Weekly", "Monthly")
+
+    var weeklyReport by remember { mutableStateOf<WeeklyReportResponse?>(null) }
+    var monthlyReport by remember { mutableStateOf<MonthlyReportResponse?>(null) }
+    var spendingTrends by remember { mutableStateOf<List<SpendingTrendDto>>(emptyList()) }
+    var isLoadingWeekly by remember { mutableStateOf(true) }
+    var isLoadingMonthly by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        repository.getWeeklyReport().onSuccess {
+            weeklyReport = it
+            isLoadingWeekly = false
+        }.onFailure {
+            isLoadingWeekly = false
+        }
+
+        repository.getMonthlyReport().onSuccess {
+            monthlyReport = it
+            isLoadingMonthly = false
+        }.onFailure {
+            isLoadingMonthly = false
+        }
+
+        repository.getSpendingTrends().onSuccess {
+            spendingTrends = it
+        }
+    }
 
     Scaffold(
         containerColor = Color(0xFFF8FAFC),
@@ -74,9 +107,21 @@ fun ReportsScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             if (selectedTabIndex == 0) {
-                WeeklyReportView()
+                if (isLoadingWeekly) {
+                    Box(modifier = Modifier.fillMaxWidth().height(250.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF3B82F6))
+                    }
+                } else {
+                    WeeklyReportView(weeklyReport)
+                }
             } else {
-                MonthlyReportView()
+                if (isLoadingMonthly) {
+                    Box(modifier = Modifier.fillMaxWidth().height(250.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Color(0xFF8B5CF6))
+                    }
+                } else {
+                    MonthlyReportView(monthlyReport, spendingTrends)
+                }
             }
             
             Spacer(modifier = Modifier.height(80.dp))
@@ -85,7 +130,11 @@ fun ReportsScreen() {
 }
 
 @Composable
-fun WeeklyReportView() {
+fun WeeklyReportView(report: WeeklyReportResponse?) {
+    val totalSpent = report?.totalSpent ?: 0.0
+    val dailyTrend = report?.dailyTrend ?: emptyList()
+    val breakdown = report?.breakdown ?: emptyList()
+
     Column(modifier = Modifier.padding(16.dp)) {
         // 7-Day Spending Analysis
         Card(
@@ -103,28 +152,29 @@ fun WeeklyReportView() {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$642.30 spent this week",
+                    text = String.format("₹%.2f spent this week", totalSpent),
                     fontSize = 14.sp,
                     color = Color(0xFF64748B)
                 )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                val weeklyData = listOf(
-                    Pair("Mon", 45f),
-                    Pair("Tue", 120f),
-                    Pair("Wed", 30f),
-                    Pair("Thu", 0f),
-                    Pair("Fri", 250f),
-                    Pair("Sat", 110f),
-                    Pair("Sun", 87f)
-                )
+                val weeklyData = dailyTrend.map { Pair(it.day.substring(0, Math.min(3, it.day.length)), it.amount.toFloat()) }
                 
-                CustomBarChart(
-                    data = weeklyData,
-                    modifier = Modifier.fillMaxWidth().height(180.dp),
-                    barColor = Color(0xFF3B82F6)
-                )
+                if (weeklyData.isNotEmpty()) {
+                    CustomBarChart(
+                        data = weeklyData,
+                        modifier = Modifier.fillMaxWidth().height(180.dp),
+                        barColor = Color(0xFF3B82F6)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No data available", color = Color(0xFF64748B))
+                    }
+                }
             }
         }
         
@@ -147,18 +197,27 @@ fun WeeklyReportView() {
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                CategoryReportItem("Food & Drink", "$210", 32, Color(0xFFFF7A00))
-                CategoryReportItem("Shopping", "$180", 28, Color(0xFFEC4899))
-                CategoryReportItem("Transport", "$120", 18, Color(0xFF3B82F6))
-                CategoryReportItem("Bills", "$90", 14, Color(0xFFEAB308))
-                CategoryReportItem("Others", "$42", 8, Color(0xFF64748B))
+                if (breakdown.isEmpty()) {
+                    Text("No transactions logged this week.", color = Color(0xFF64748B), modifier = Modifier.padding(vertical = 12.dp))
+                } else {
+                    breakdown.forEach { item ->
+                        val color = try {
+                            Color(android.graphics.Color.parseColor(item.color))
+                        } catch (e: Exception) {
+                            Color(0xFF3B82F6)
+                        }
+                        CategoryReportItem(item.category, String.format("₹%.2f", item.amount), item.percentage.toInt(), color)
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun MonthlyReportView() {
+fun MonthlyReportView(report: MonthlyReportResponse?, trends: List<SpendingTrendDto>) {
+    val breakdown = report?.breakdown ?: emptyList()
+
     Column(modifier = Modifier.padding(16.dp)) {
         // 5-Month Spending Trends
         Card(
@@ -183,19 +242,22 @@ fun MonthlyReportView() {
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
-                val trendData = listOf(
-                    Pair("Jan", 2100f),
-                    Pair("Feb", 1800f),
-                    Pair("Mar", 2400f),
-                    Pair("Apr", 2200f),
-                    Pair("May", 2876f)
-                )
+                val trendData = trends.map { Pair(it.monthName, it.expenses.toFloat()) }
                 
-                CustomAreaChart(
-                    data = trendData,
-                    modifier = Modifier.fillMaxWidth().height(180.dp),
-                    lineColor = Color(0xFF8B5CF6)
-                )
+                if (trendData.isNotEmpty()) {
+                    CustomAreaChart(
+                        data = trendData,
+                        modifier = Modifier.fillMaxWidth().height(180.dp),
+                        lineColor = Color(0xFF8B5CF6)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(180.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No trends data available", color = Color(0xFF64748B))
+                    }
+                }
             }
         }
         
@@ -218,45 +280,48 @@ fun MonthlyReportView() {
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                val pieData = listOf(
-                    Pair("Housing", 1200f),
-                    Pair("Food", 450f),
-                    Pair("Transport", 340f),
-                    Pair("Shopping", 210f),
-                    Pair("Others", 180f)
-                )
+                val pieData = breakdown.map { Pair(it.category, it.amount.toFloat()) }
                 
-                val colors = listOf(
-                    Color(0xFF8B5CF6),
-                    Color(0xFFFF7A00),
-                    Color(0xFF3B82F6),
-                    Color(0xFFEC4899),
-                    Color(0xFF14B8A6)
-                )
+                val colors = breakdown.map {
+                    try {
+                        Color(android.graphics.Color.parseColor(it.color))
+                    } catch (e: Exception) {
+                        Color(0xFF3B82F6)
+                    }
+                }
                 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    CustomPieChart(
-                        data = pieData,
-                        colors = colors,
-                        modifier = Modifier.size(160.dp)
-                    )
-                    
-                    Spacer(modifier = Modifier.width(24.dp))
-                    
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        pieData.forEachIndexed { index, pair ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(colors[index]))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column {
-                                    Text(text = pair.first, fontSize = 12.sp, color = Color(0xFF0F172A), fontWeight = FontWeight.Bold)
-                                    Text(text = "$${pair.second.toInt()}", fontSize = 12.sp, color = Color(0xFF64748B))
+                if (pieData.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CustomPieChart(
+                            data = pieData,
+                            colors = colors,
+                            modifier = Modifier.size(140.dp)
+                        )
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.weight(1f)) {
+                            pieData.forEachIndexed { index, pair ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(colors[index % colors.size]))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(text = pair.first, fontSize = 12.sp, color = Color(0xFF0F172A), fontWeight = FontWeight.Bold)
+                                        Text(text = String.format("₹%.2f", pair.second), fontSize = 12.sp, color = Color(0xFF64748B))
+                                    }
                                 }
                             }
                         }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No category data available this month.", color = Color(0xFF64748B))
                     }
                 }
             }

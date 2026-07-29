@@ -11,38 +11,45 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moneymap.data.repository.MoneyMapRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmartSavingTipsScreen(onBack: () -> Unit) {
-    val tips = listOf(
-        SavingTip(
-            "Reduce Dining Out",
-            "You spent $450 on food this month. Cooking at home 3 more times a week could save you $120/mo.",
-            Color(0xFF3B82F6),
-            "High Impact"
-        ),
-        SavingTip(
-            "Cancel Unused Subscriptions",
-            "You have 2 streaming services you haven't used in 30 days. Canceling them saves $25/mo.",
-            Color(0xFF10B981),
-            "Medium Impact"
-        ),
-        SavingTip(
-            "Energy Efficiency",
-            "Your utility bill is higher than average. Try adjusting your thermostat to save up to 10%.",
-            Color(0xFFF59E0B),
-            "Low Impact"
-        )
-    )
+    val context = LocalContext.current
+    val repository = remember(context) { MoneyMapRepository(context) }
+    var tips by remember { mutableStateOf<List<SavingTip>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        repository.getDashboardStats().onSuccess { stats ->
+            tips = stats.tips.map {
+                val parsedColor = try {
+                    Color(android.graphics.Color.parseColor(it.color))
+                } catch (e: Exception) {
+                    Color(0xFF3B82F6)
+                }
+                SavingTip(
+                    title = it.title,
+                    message = it.message,
+                    color = parsedColor,
+                    impact = it.impact
+                )
+            }
+            isLoading = false
+        }.onFailure {
+            isLoading = false
+        }
+    }
 
     Scaffold(
         containerColor = Color.White,
@@ -122,13 +129,29 @@ fun SmartSavingTipsScreen(onBack: () -> Unit) {
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 24.dp, top = 0.dp, end = 24.dp, bottom = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(tips) { tip ->
-                    TipItem(tip)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF3B82F6))
+                }
+            } else if (tips.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No tips at the moment.", color = Color(0xFF64748B), fontSize = 16.sp)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 24.dp, top = 0.dp, end = 24.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(tips) { tip ->
+                        TipItem(tip)
+                    }
                 }
             }
         }

@@ -171,7 +171,7 @@ fun FilterScreen(onBack: () -> Unit) {
                         value = minAmount,
                         onValueChange = { minAmount = it },
                         modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = { Text("$", color = Color(0xFF64748B)) },
+                        leadingIcon = { Text("₹", color = Color(0xFF64748B)) },
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,
@@ -189,7 +189,7 @@ fun FilterScreen(onBack: () -> Unit) {
                         value = maxAmount,
                         onValueChange = { maxAmount = it },
                         modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = { Text("$", color = Color(0xFF64748B)) },
+                        leadingIcon = { Text("₹", color = Color(0xFF64748B)) },
                         shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Transparent,

@@ -85,20 +85,20 @@
     <string name="student_profile">Student Profile</string>
     <string name="student_setup_subtitle">Tailoring the pocket money tracker for you</string>
     <string name="available_pocket_money">Available Pocket Money</string>
-    <string name="default_student_balance">$450.00</string>
+    <string name="default_student_balance">₹450.00</string>
     <string name="weekly_spending">Weekly Spending</string>
-    <string name="weekly_spent_label">$40 spent</string>
-    <string name="weekly_left_label">$60 left</string>
+    <string name="weekly_spent_label">₹40 spent</string>
+    <string name="weekly_left_label">₹60 left</string>
     <string name="my_goals">My Goals</string>
     <string name="goal_new_shoes">New Shoes</string>
     <string name="goal_concert">Concert</string>
     <string name="student_expenses">Student Expenses</string>
     <string name="campus_cafe">Campus Cafe</string>
     <string name="food_time_label">Food • 1h ago</string>
-    <string name="cafe_amount">-$5.50</string>
+    <string name="cafe_amount">-₹5.50</string>
     <string name="bookstore">Bookstore</string>
     <string name="supplies_time_label">Supplies • 4h ago</string>
-    <string name="bookstore_amount">-$12.00</string>
+    <string name="bookstore_amount">-₹12.00</string>
 
     <!-- Employee Setup & Dashboard -->
     <string name="employee_profile">Employee Profile</string>
@@ -107,20 +107,20 @@
     <string name="salary_hint">0.00</string>
     <string name="investment_goal">Investment Goal</string>
     <string name="available_salary">Available Salary</string>
-    <string name="default_salary_balance">$3,200.00</string>
+    <string name="default_salary_balance">₹3,200.00</string>
     <string name="monthly_limit">Monthly Limit</string>
-    <string name="salary_spent_label">$1,200 spent</string>
-    <string name="salary_left_label">$2,000 left</string>
+    <string name="salary_spent_label">₹1,200 spent</string>
+    <string name="salary_left_label">₹2,000 left</string>
     <string name="investments">Investments</string>
     <string name="goal_stock_market">Stock Market</string>
     <string name="goal_real_estate">Real Estate</string>
     <string name="office_expenses">Office &amp; Daily Expenses</string>
     <string name="commute">Commute</string>
     <string name="transport_label">Transport • 3h ago</string>
-    <string name="commute_amount">-$8.00</string>
+    <string name="commute_amount">-₹8.00</string>
     <string name="lunch">Lunch</string>
     <string name="food_label">Food • 5h ago</string>
-    <string name="lunch_amount">-$15.00</string>
+    <string name="lunch_amount">-₹15.00</string>
 
     <string name="salary_credit_date">SALARY CREDIT DATE</string>
     <string name="company_name">COMPANY NAME</string>

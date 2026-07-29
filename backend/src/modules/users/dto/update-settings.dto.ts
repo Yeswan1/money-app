@@ -1,4 +1,5 @@
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsEnum } from 'class-validator';
+import { Role } from '@prisma/client';
 
 export class UpdateSettingsDto {
   @IsOptional()
@@ -8,6 +9,10 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsString()
   currency?: string;
+
+  @IsOptional()
+  @IsEnum(Role, { message: 'Invalid user role' })
+  role?: Role;
 
   @IsOptional()
   @IsBoolean()
