@@ -20,6 +20,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -90,27 +93,40 @@ jobs:
           
           if [ -d "gh-pages-branch/reports/history" ]; then
             echo "Archiving historical reports..."
-            cp -r gh-pages-branch/reports/history/* deploy_reports/reports/history/
+            cp -r gh-pages-branch/reports/history/* deploy_reports/reports/history/ || true
+          else
+            echo "No gh-pages history branch found."
           fi
           
-          # Copy execution reports
-          cp "automation/Test Results/HTML/execution-report.html" deploy_reports/reports/latest/
-          cp "automation/Test Results/HTML/dashboard.html" deploy_reports/reports/latest/
-          cp "automation/Test Results/Summary/summary.md" deploy_reports/reports/latest/
+          # Copy execution reports only if they exist
+          if [ -f "automation/Test Results/HTML/execution-report.html" ]; then
+            cp "automation/Test Results/HTML/execution-report.html" deploy_reports/reports/latest/
+            cp "automation/Test Results/HTML/dashboard.html" deploy_reports/reports/latest/ || true
+          else
+            echo "execution-report.html not found; skipping copy."
+          fi
+          
+          if [ -f "automation/Test Results/Summary/summary.md" ]; then
+            cp "automation/Test Results/Summary/summary.md" deploy_reports/reports/latest/
+          else
+            echo "summary.md not found; skipping copy."
+          fi
           
           # Copy screenshots and logs
           if [ -d "automation/reports/screenshots" ]; then
             cp -r automation/reports/screenshots deploy_reports/reports/latest/
-            cp -r automation/reports/screenshots deploy_reports/reports/history/build-${{ github.run_number }}/
+            cp -r automation/reports/screenshots deploy_reports/reports/history/build-${{ github.run_number }}/ || true
           fi
           
           if [ -d "automation/reports/logs" ]; then
             cp -r automation/reports/logs deploy_reports/reports/latest/
-            cp -r automation/reports/logs deploy_reports/reports/history/build-${{ github.run_number }}/
+            cp -r automation/reports/logs deploy_reports/reports/history/build-${{ github.run_number }}/ || true
           fi
           
-          # Copy index html to history for the specific build
-          cp "automation/Test Results/HTML/execution-report.html" deploy_reports/reports/history/build-${{ github.run_number }}/
+          # Copy index html to history for the specific build if it exists
+          if [ -f "automation/Test Results/HTML/execution-report.html" ]; then
+            cp "automation/Test Results/HTML/execution-report.html" deploy_reports/reports/history/build-${{ github.run_number }}/
+          fi
 
       - name: Publish Reports to GitHub Pages
         if: always()
